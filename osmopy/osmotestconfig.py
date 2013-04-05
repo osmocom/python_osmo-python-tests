@@ -56,6 +56,7 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
 
     except IOError as se:
         print >> sys.stderr, "Failed to verify %s" % ' '.join(cmd)
+        print >> sys.stderr, "Current directory: %s" % os.getcwd()
         print >> sys.stderr, "Error was %s" % se
         raise se
 
@@ -147,7 +148,7 @@ def check_configs_tested(basedir, app_configs):
 
 
 def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
-                  rmtmp=False):
+                  confpath=".", rmtmp=False):
     check_configs_tested("doc/examples/", app_configs)
     errors = 0
     for app in apps:
@@ -157,9 +158,10 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
 
         configs = app_configs[app[3]]
         for config in configs:
+            config = os.path.join(confpath, config)
             errors |= test_config(app, config, tmpdir, verbose)
 
-    if rmtmp:
+    if rmtmp or not errors:
         remove_tmpdir(tmpdir)
 
     return errors
@@ -169,6 +171,7 @@ if __name__ == '__main__':
     import argparse
 
     confpath = "."
+    wordir = "."
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--e1nitb", action="store_true", dest="e1nitb")
@@ -176,10 +179,16 @@ if __name__ == '__main__':
                         action="store_true", help="verbose mode")
     parser.add_argument("-p", "--pythonconfpath", dest="p",
                         help="searchpath for config")
+    parser.add_argument("-w", "--workdir", dest="w",
+                        help="Working directory to run in")
+
     args = parser.parse_args()
 
     if args.p:
         confpath = args.p
+
+    if args.w:
+        workdir = args.w
 
     osmoappdesc = None
     try:
@@ -194,4 +203,6 @@ if __name__ == '__main__':
     if args.e1nitb:
         configs['nitb'].extend(osmoappdesc.nitb_e1_configs)
 
-    sys.exit(test_all_apps(apps, configs, verbose=args.verbose))
+    os.chdir(workdir)
+    sys.exit(test_all_apps(apps, configs, confpath=confpath,
+                           verbose=args.verbose))

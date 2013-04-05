@@ -14,23 +14,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import time
 import unittest
 
 import osmopy.obscvty as obscvty
 import osmopy.osmoutil as osmoutil
 
+confpath = '.'
+
 """Test a VTY. Warning: osmoappdesc must be imported first."""
 
 
 class TestVTY(unittest.TestCase):
     def setUp(self):
-        osmo_vty_cmd = osmoappdesc.vty_command
+        osmo_vty_cmd = osmoappdesc.vty_command[:]
+        config_index = osmo_vty_cmd.index('-c')
+        if config_index:
+            cfi = config_index + 1
+            osmo_vty_cmd[cfi] = os.path.join(confpath, osmo_vty_cmd[cfi])
+
         try:
+            print "Launch: %s from %s" % (' '.join(osmo_vty_cmd), os.getcwd())
             self.proc = osmoutil.popen_devnull(osmo_vty_cmd)
         except OSError:
             print >> sys.stderr, "Current directory: %s" % os.getcwd()
-            print >> sys.stderr, "Consider setting -w"
+            print >> sys.stderr, "Consider setting -b"
         time.sleep(1)
 
         appstring = osmoappdesc.vty_app[2]
@@ -61,8 +70,7 @@ if __name__ == '__main__':
     import os
     import sys
 
-    workdir = "."
-    confpath = "."
+    workdir = '.'
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", dest="verbose",
@@ -70,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--pythonconfpath", dest="p",
                         help="searchpath for config")
     parser.add_argument("-w", "--workdir", dest="w",
-                        help="Working directory to run in")
+                        help="Working directory")
     args = parser.parse_args()
 
     verbose_level = 1
@@ -89,6 +97,7 @@ if __name__ == '__main__':
         print >> sys.stderr, "osmoappdesc not found, set searchpath with -p"
         sys.exit(1)
 
+    print "confpath %s, workdir %s" % (confpath, workdir)
     os.chdir(workdir)
     print "Running tests for specific VTY commands"
     suite = unittest.TestLoader().loadTestsFromTestCase(TestVTY)
