@@ -65,11 +65,17 @@ if __name__ == '__main__':
     confpath = "."
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", dest="verbose",
+                        action="store_true", help="verbose mode")
     parser.add_argument("-p", "--pythonconfpath", dest="p",
                         help="searchpath for config")
     parser.add_argument("-w", "--workdir", dest="w",
                         help="Working directory to run in")
     args = parser.parse_args()
+
+    verbose_level = 1
+    if args.verbose:
+        verbose_level = 2
 
     if args.w:
         workdir = args.w
@@ -84,6 +90,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     os.chdir(workdir)
+    print "Running tests for specific VTY commands"
     suite = unittest.TestLoader().loadTestsFromTestCase(TestVTY)
-    res = unittest.TextTestRunner(verbosity=1).run(suite)
+    res = unittest.TextTestRunner(verbosity=verbose_level).run(suite)
     sys.exit(len(res.errors) + len(res.failures))
