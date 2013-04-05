@@ -27,6 +27,7 @@ confpath = '.'
 
 
 class TestVTY(unittest.TestCase):
+
     def setUp(self):
         osmo_vty_cmd = osmoappdesc.vty_command[:]
         config_index = osmo_vty_cmd.index('-c')
@@ -90,12 +91,8 @@ if __name__ == '__main__':
 
     if args.p:
         confpath = args.p
-    osmoappdesc = None
-    try:
-        osmoappdesc = osmoutil.importappconf(confpath, "osmoappdesc")
-    except ImportError as e:
-        print >> sys.stderr, "osmoappdesc not found, set searchpath with -p"
-        sys.exit(1)
+    osmoappdesc = osmoutil.importappconf_or_quit(confpath, "osmoappdesc",
+                                                 args.p)
 
     print "confpath %s, workdir %s" % (confpath, workdir)
     os.chdir(workdir)

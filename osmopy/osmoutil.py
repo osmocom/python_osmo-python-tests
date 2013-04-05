@@ -39,12 +39,16 @@ def end_proc(proc):
         proc.wait()
 
 
-"""Add a directory to sys.path, try to import a config file.
+"""Add a directory to sys.path, try to import a config file."""
 
-This may throw ImportError if the config file is not found."""
-
-
-def importappconf(dirname, confname):
+def importappconf_or_quit(dirname, confname, p_set):
     if dirname not in sys.path:
         sys.path.append(dirname)
-    return importlib.import_module(confname)
+    try:
+        return importlib.import_module(confname)
+    except ImportError as e:
+        if p_set:
+            print >> sys.stderr, "osmoappdesc not found in %s" % dirname
+        else:
+            print >> sys.stderr, "set osmoappdesc location with -p <dir>"
+        sys.exit(1)

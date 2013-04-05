@@ -190,12 +190,8 @@ if __name__ == '__main__':
     if args.w:
         workdir = args.w
 
-    osmoappdesc = None
-    try:
-        osmoappdesc = osmoutil.importappconf(confpath, "osmoappdesc")
-    except ImportError as e:
-        print >> sys.stderr, "osmoappdesc not found, set searchpath with -p"
-        sys.exit(1)
+    osmoappdesc = osmoutil.importappconf_or_quit(confpath, "osmoappdesc",
+                                                 args.p)
 
     apps = osmoappdesc.apps
     configs = osmoappdesc.app_configs
