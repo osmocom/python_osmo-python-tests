@@ -18,8 +18,19 @@
 #
 import socket
 
+"""VTYInteract: interact with an osmocom vty
+
+Specify a VTY to connect to, and run commands on it.
+Connections will be reestablished as necessary.
+Methods: __init__, command, enabled_command, verify, w_verify"""
+
 
 class VTYInteract(object):
+    """__init__(self, name, host, port):
+
+    name is the name the vty prints for commands, ie OpenBSC
+    host is the hostname to connect to
+    port is the port to connect on"""
     def __init__(self, name, host, port):
         self.name = name
         self.host = host
@@ -72,6 +83,7 @@ class VTYInteract(object):
         self.command("enable")
 
     """Run a command on the vty"""
+
     def command(self, request, close=False):
         return self._common_command(request, close)
 

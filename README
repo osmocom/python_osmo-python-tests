@@ -1,0 +1,27 @@
+Building/installation:
+sudo python setup.py install
+If you prefer to have it cleanly removable, install checkinstall and run
+sudo checkinstall python setup.py install
+
+Use
+There are currently 3 scripts in this package:
+osmodumpdoc.py - dump documentation (the VTY's "show online-help").
+osmotestconfig.py - test that apps start/write with example configs
+osmotestvty.py - test vty operations (currently, tests very few)
+
+Each of these scripts imports a project-specific osmoappdesc.py,
+which provides information about the available apps, configs, vty ports, etc.
+
+Run the scripts with osmoappdesc.py in the current directory (preferred)
+or with -p <the directory containing osmoappdesc.py>.
+Remember that osmoappdesc.py may contain relative paths.
+
+Example:
+After install osmodumpdoc for openbsc's apps can be run by:
+cd <your_source_dir>/openbsc/openbsc && osmodumpdoc.py
+
+Libraries:
+osmopy/obscvty.py - connect to a vty, run commands on it, see the result 
+osmopy/osmoutil.py - code that's shared between the scripts
+
+obscvty.py may be of general use. osmoutil.py probably isn't.
