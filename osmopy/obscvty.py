@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Holger Hans Peter Freyther
+# Copyright (C) 2012, 2013 Holger Hans Peter Freyther
 # Copyright (C) 2013 Katerina Barone-Adesi
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 #
 # VTY helper code for OpenBSC
 #
+import re
 import socket
 
 """VTYInteract: interact with an osmocom vty
@@ -37,18 +38,48 @@ class VTYInteract(object):
         self.port = port
 
         self.socket = None
-        self.norm_end = '\r\n%s> ' % self.name
-        self.priv_end = '\r\n%s# ' % self.name
+        self.norm_end = re.compile('\r\n%s(\([\w-]*\))?> $' % self.name)
+        self.priv_end = re.compile('\r\n%s(\([\w-]*\))?# $' % self.name)
 
     def _close_socket(self):
         self.socket.close()
         self.socket = None
 
     def _is_end(self, text, ends):
+        """
+            >>> vty = VTYInteract('OsmoNAT', 'localhost', 9999)
+            >>> end = [vty.norm_end, vty.priv_end]
+
+            Simple test
+            >>> text1 = 'abc\\r\\nOsmoNAT> '
+            >>> vty._is_end(text1, end)
+            11
+
+            Simple test with the enabled node
+            >>> text2 = 'abc\\r\\nOsmoNAT# '
+            >>> vty._is_end(text2, end)
+            11
+
+            Now the more complicated one
+            >>> text3 = 'abc\\r\\nOsmoNAT(config)# '
+            >>> vty._is_end(text3, end)
+            19
+
+            Now the more complicated one
+            >>> text4 = 'abc\\r\\nOsmoNAT(config-nat)# '
+            >>> vty._is_end(text4, end)
+            23
+
+            Now the more complicated one
+            >>> text5 = 'abc\\r\\nmoo'
+            >>> vty._is_end(text5, end)
+            0
+        """
         for end in ends:
-            if text.endswith(end):
-                return end
-        return ""
+            match = end.search(text)
+            if match:
+                return match.end() - match.start()
+        return 0
 
     def _common_command(self, request, close=False, ends=None):
         if not ends:
@@ -71,12 +102,12 @@ class VTYInteract(object):
             if not res:  # yes, this is ugly
                 raise IOError("Failed to read data (did the app crash?)")
             end = self._is_end(res, ends)
-            if end:
+            if end > 0:
                 break
 
         if close:
             self._close_socket()
-        return res[len(request) + 2: -len(end)]
+        return res[len(request) + 2: -end]
 
     # There's no close parameter, as close=True makes this useless
     def enable(self):
@@ -117,3 +148,7 @@ class VTYInteract(object):
                 print "Rec: %s\nExp: %s" % (res, results)
 
         return res == results
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
