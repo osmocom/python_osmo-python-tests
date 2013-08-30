@@ -38,8 +38,9 @@ class VTYInteract(object):
         self.port = port
 
         self.socket = None
-        self.norm_end = re.compile('\r\n%s(\([\w-]*\))?> $' % self.name)
-        self.priv_end = re.compile('\r\n%s(\([\w-]*\))?# $' % self.name)
+        self.norm_end = re.compile('\r\n%s(?:\(([\w-]*)\))?> $' % self.name)
+        self.priv_end = re.compile('\r\n%s(?:\(([\w-]*)\))?# $' % self.name)
+        self.last_node = ''
 
     def _close_socket(self):
         self.socket.close()
@@ -74,10 +75,27 @@ class VTYInteract(object):
             >>> text5 = 'abc\\r\\nmoo'
             >>> vty._is_end(text5, end)
             0
+
+            Check for node name extraction
+            >>> text6 = 'abc\\r\\nOsmoNAT(config-nat)# '
+            >>> vty._is_end(text6, end)
+            23
+            >>> vty.node()
+            'config-nat'
+
+            Check for empty node name extraction
+            >>> text7 = 'abc\\r\\nOsmoNAT# '
+            >>> vty._is_end(text7, end)
+            11
+            >>> vty.node() is None
+            True
+
         """
+        self.last_node = None
         for end in ends:
             match = end.search(text)
             if match:
+                self.last_node = match.group(1)
                 return match.end() - match.start()
         return 0
 
@@ -148,6 +166,9 @@ class VTYInteract(object):
                 print "Rec: %s\nExp: %s" % (res, results)
 
         return res == results
+
+    def node(self):
+        return self.last_node
 
 if __name__ == "__main__":
     import doctest
