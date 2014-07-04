@@ -27,12 +27,18 @@ import osmopy.osmoutil as osmoutil
 # Return true iff all the tests for the given config pass
 def test_config(app_desc, config, tmpdir, verbose=True):
     try:
-        test_config_atest(app_desc, config, verify_doc, verbose)
+        err = 0
+        if test_config_atest(app_desc, config, verify_doc, verbose) > 0:
+            err += 1
 
         newconfig = copy_config(tmpdir, config)
-        test_config_atest(app_desc, newconfig, write_config, verbose)
-        test_config_atest(app_desc, newconfig, token_vty_command, verbose)
-        return 0
+        if test_config_atest(app_desc, newconfig, write_config, verbose) > 0:
+            err += 1
+
+        if test_config_atest(app_desc, newconfig, token_vty_command, verbose) > 0:
+            err += 1
+
+        return err
 
     # If there's a socket error, skip the rest of the tests for this config
     except IOError:
@@ -93,7 +99,7 @@ def write_config(vty):
 # The only purpose of this function is to verify a working vty
 def token_vty_command(vty):
     vty.command("help")
-    return True
+    return 0
 
 
 # This may warn about the same doc missing multiple times, by design
