@@ -28,7 +28,7 @@ import osmopy.osmoutil as osmoutil
 def test_config(app_desc, config, tmpdir, verbose=True):
     try:
         err = 0
-        if test_config_atest(app_desc, config, verify_doc, verbose) > 0:
+        if test_config_atest(app_desc, config, verify_doc, verbose)[0] > 0:
             err += 1
 
         newconfig = copy_config(tmpdir, config)
@@ -93,7 +93,8 @@ def copy_config(dirname, config):
 
 def write_config(vty):
     new_config = vty.enabled_command("write")
-    return new_config.split(' ')[-1]
+    print new_config.split(' ')[-1]
+    return 0
 
 
 # The only purpose of this function is to verify a working vty
