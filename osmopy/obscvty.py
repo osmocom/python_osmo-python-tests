@@ -127,6 +127,25 @@ class VTYInteract(object):
             self._close_socket()
         return res[len(request) + 2: -end]
 
+    """A generator function yielding lines separated by delim.
+       Behaves similar to a file readlines() method.
+
+       Example of use:
+        for line in vty.readlines():
+            print line
+    """
+    def readlines(self, recv_buffer=4096, delim='\n'):
+        buffer = ''
+        data = True
+        while data:
+            data = self.socket.recv(recv_buffer)
+            buffer += data
+
+            while buffer.find(delim) != -1:
+                line, buffer = buffer.split('\n', 1)
+                yield line
+        return
+
     # There's no close parameter, as close=True makes this useless
     def enable(self):
         self.command("enable")
