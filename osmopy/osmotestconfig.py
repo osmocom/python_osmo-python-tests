@@ -49,7 +49,7 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
     proc = None
     ret = None
     try:
-        cmd = [app_desc[1], "-c", config]
+        cmd = app_desc[1].split(' ') + [ "-c", config]
         if verbose:
             print "Verifying %s, test %s" % (' '.join(cmd), run_test.__name__)
 
@@ -128,7 +128,7 @@ def verify_doc(vty):
 
 # Skip testing the configurations of anything that hasn't been compiled
 def app_exists(app_desc):
-    cmd = app_desc[1]
+    cmd = app_desc[1].split(' ')[0]
     return os.path.exists(cmd)
 
 
