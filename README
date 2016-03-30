@@ -2,6 +2,7 @@ Building/installation:
 sudo python setup.py install
 If you prefer to have it cleanly removable, install checkinstall and run
 sudo checkinstall python setup.py install
+Alternatively, just run 'pip install --user -e ./'
 
 Use
 There are currently 3 scripts in this package:
