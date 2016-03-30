@@ -139,11 +139,11 @@ def remove_tmpdir(tmpdir):
     os.rmdir(tmpdir)
 
 
-def check_configs_tested(basedir, app_configs):
+def check_configs_tested(basedir, app_configs, ignore_configs):
     configs = []
     for root, dirs, files in os.walk(basedir):
         for f in files:
-            if f.endswith(".cfg"):
+            if f.endswith(".cfg") and f not in ignore_configs:
                 configs.append(os.path.join(root, f))
     for config in configs:
         found = False
@@ -155,8 +155,8 @@ def check_configs_tested(basedir, app_configs):
 
 
 def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
-                  confpath=".", rmtmp=False):
-    check_configs_tested("doc/examples/", app_configs)
+                  confpath=".", rmtmp=False, ignore_configs=[]):
+    check_configs_tested("doc/examples/", app_configs, ignore_configs)
     errors = 0
     for app in apps:
         if not app_exists(app):
@@ -202,10 +202,11 @@ if __name__ == '__main__':
 
     apps = osmoappdesc.apps
     configs = osmoappdesc.app_configs
+    ignores = getattr(osmoappdesc, 'ignore_configs', [])
 
     if args.e1nitb:
         configs['nitb'].extend(osmoappdesc.nitb_e1_configs)
 
     os.chdir(workdir)
-    sys.exit(test_all_apps(apps, configs, confpath=confpath,
-                           verbose=args.verbose))
+    sys.exit(test_all_apps(apps, configs, ignore_configs=ignores,
+                           confpath=confpath, verbose=args.verbose))
