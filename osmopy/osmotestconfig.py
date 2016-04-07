@@ -17,7 +17,7 @@
 import os
 import os.path
 import time
-import sys
+import sys, shutil
 import tempfile
 
 import osmopy.obscvty as obscvty
@@ -72,14 +72,14 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
 
     return ret
 
-
 def copy_config(dirname, config):
+    shutil.rmtree(dirname, True)
+    ign = shutil.ignore_patterns('*.cfg')
+    shutil.copytree(os.path.dirname(config), dirname, ignore=ign)
+
     try:
         os.stat(dirname)
     except OSError:
-        os.mkdir(dirname)
-    else:
-        remove_tmpdir(dirname)
         os.mkdir(dirname)
 
     prefix = os.path.basename(config)
