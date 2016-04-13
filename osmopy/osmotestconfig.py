@@ -17,7 +17,7 @@
 import os
 import os.path
 import time
-import sys, shutil
+import sys, shutil, stat
 import tempfile
 
 import osmopy.obscvty as obscvty
@@ -76,6 +76,7 @@ def copy_config(dirname, config):
     shutil.rmtree(dirname, True)
     ign = shutil.ignore_patterns('*.cfg')
     shutil.copytree(os.path.dirname(config), dirname, ignore=ign)
+    os.chmod(dirname, stat.S_IRWXU)
 
     try:
         os.stat(dirname)
