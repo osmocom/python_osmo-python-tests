@@ -94,7 +94,9 @@ def copy_config(dirname, config):
 
 def write_config(vty):
     new_config = vty.enabled_command("write")
-    print new_config.split(' ')[-1]
+    if not new_config.startswith("Configuration saved to "):
+        print(new_config)
+        return 1, [new_config]
     return 0
 
 
