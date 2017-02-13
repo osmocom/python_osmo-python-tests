@@ -43,8 +43,9 @@ class VTYInteract(object):
         self.last_node = ''
 
     def _close_socket(self):
-        self.socket.close()
-        self.socket = None
+        if self.socket:
+            self.socket.close()
+            self.socket = None
 
     def _is_end(self, text, ends):
         """
