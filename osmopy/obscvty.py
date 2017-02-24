@@ -18,6 +18,7 @@
 #
 import re
 import socket
+import sys, subprocess
 
 """VTYInteract: interact with an osmocom vty
 
@@ -25,6 +26,23 @@ Specify a VTY to connect to, and run commands on it.
 Connections will be reestablished as necessary.
 Methods: __init__, command, enabled_command, verify, w_verify"""
 
+debug_tcp_sockets = False
+
+def cmd(what):
+    print '\n> %s' % what
+    sys.stdout.flush()
+    subprocess.call(what, shell=True)
+    sys.stdout.flush()
+    sys.stderr.flush()
+    print ''
+    sys.stdout.flush()
+
+def print_used_tcp_sockets():
+    if not debug_tcp_sockets:
+        return
+    cmd('ss -tn');
+    cmd('ss -tln');
+    cmd('ps xua | grep osmo');
 
 class VTYInteract(object):
     """__init__(self, name, host, port):
@@ -32,7 +50,12 @@ class VTYInteract(object):
     name is the name the vty prints for commands, ie OpenBSC
     host is the hostname to connect to
     port is the port to connect on"""
+
+    all_sockets = []
+
     def __init__(self, name, host, port):
+        print_used_tcp_sockets()
+
         self.name = name
         self.host = host
         self.port = port
@@ -44,6 +67,11 @@ class VTYInteract(object):
 
     def _close_socket(self):
         if self.socket:
+            if debug_tcp_sockets:
+                VTYInteract.all_sockets.remove(self.socket)
+                print "Socket: closing %s:%d %r (%d sockets open)" % (
+                        self.host, self.port, self.socket,
+                        len(VTYInteract.all_sockets))
             self.socket.close()
             self.socket = None
 
@@ -107,6 +135,11 @@ class VTYInteract(object):
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.setblocking(1)
             self.socket.connect((self.host, self.port))
+            if debug_tcp_sockets:
+                VTYInteract.all_sockets.append(self.socket)
+                print "Socket: connected to %s:%d %r (%d sockets open)" % (
+                        self.host, self.port, self.socket,
+                        len(VTYInteract.all_sockets))
             self.socket.recv(4096)
 
         # Now send the command
