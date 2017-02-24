@@ -23,8 +23,10 @@ import importlib
 """Run a command, with stdout and stderr directed to devnull"""
 
 
-def popen_devnull(cmd):
+def popen_devnull(cmd, verbose=True):
     devnull = open(os.devnull, 'w')
+    if verbose:
+        print "Launching: PWD=%s %s" % (os.getcwd(), ' '.join([repr(c) for c in cmd]))
     return subprocess.Popen(cmd, stdout=devnull, stderr=devnull)
 
 
