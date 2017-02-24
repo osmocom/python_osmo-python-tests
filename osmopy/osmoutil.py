@@ -18,6 +18,7 @@ import subprocess
 import os
 import sys
 import importlib
+import time
 
 
 """Run a command, with stdout and stderr directed to devnull"""
@@ -36,9 +37,18 @@ If the process doesn't appear to exist (for instance, is None), do nothing"""
 
 
 def end_proc(proc):
-    if proc:
+    if not proc:
+        return
+
+    proc.terminate()
+    time.sleep(.1)
+    rc = proc.poll()
+    if rc is not None:
+        print "Terminated child process"
+    else:
         proc.kill()
-        proc.wait()
+        print "Killed child process"
+    proc.wait()
 
 
 """Add a directory to sys.path, try to import a config file."""
