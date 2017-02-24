@@ -48,6 +48,7 @@ def test_config(app_desc, config, tmpdir, verbose=True):
 def test_config_atest(app_desc, config, run_test, verbose=True):
     proc = None
     ret = None
+    vty = None
     try:
         cmd = app_desc[1].split(' ') + [ "-c", config]
         if verbose:
@@ -69,6 +70,8 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
     finally:
         if proc:
             osmoutil.end_proc(proc)
+        if vty:
+           vty._close_socket()
 
     return ret
 
