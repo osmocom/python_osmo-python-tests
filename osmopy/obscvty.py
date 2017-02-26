@@ -19,6 +19,7 @@
 import re
 import socket
 import sys, subprocess
+import os
 
 """VTYInteract: interact with an osmocom vty
 
@@ -26,7 +27,7 @@ Specify a VTY to connect to, and run commands on it.
 Connections will be reestablished as necessary.
 Methods: __init__, command, enabled_command, verify, w_verify"""
 
-debug_tcp_sockets = False
+debug_tcp_sockets = (os.getenv('OSMOPY_DEBUG_TCP_SOCKETS', '0') != '0')
 
 def cmd(what):
     print '\n> %s' % what
