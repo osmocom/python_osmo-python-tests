@@ -39,6 +39,7 @@ def cmd(what):
     sys.stdout.flush()
 
 def print_used_tcp_sockets():
+    global debug_tcp_sockets
     if not debug_tcp_sockets:
         return
     cmd('ls /proc/self/fd');
@@ -68,6 +69,7 @@ class VTYInteract(object):
         self.last_node = ''
 
     def _close_socket(self):
+        global debug_tcp_sockets
         if self.socket:
             if debug_tcp_sockets:
                 VTYInteract.all_sockets.remove(self.socket)
@@ -131,6 +133,7 @@ class VTYInteract(object):
         return 0
 
     def _common_command(self, request, close=False, ends=None):
+        global debug_tcp_sockets
         if not ends:
             ends = [self.norm_end, self.priv_end]
         if not self.socket:
