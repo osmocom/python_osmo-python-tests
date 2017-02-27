@@ -70,14 +70,16 @@ class VTYInteract(object):
 
     def _close_socket(self):
         global debug_tcp_sockets
-        if self.socket:
-            if debug_tcp_sockets:
-                VTYInteract.all_sockets.remove(self.socket)
-                print "Socket: closing %s:%d %r (%d sockets open)" % (
-                        self.host, self.port, self.socket,
-                        len(VTYInteract.all_sockets))
-            self.socket.close()
-            self.socket = None
+        if self.socket is None:
+            return
+
+        if debug_tcp_sockets:
+            VTYInteract.all_sockets.remove(self.socket)
+            print "Socket: closing %s:%d %r (%d sockets open)" % (
+                    self.host, self.port, self.socket,
+                    len(VTYInteract.all_sockets))
+        self.socket.close()
+        self.socket = None
 
     def _is_end(self, text, ends):
         """
