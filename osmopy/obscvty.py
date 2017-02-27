@@ -74,7 +74,10 @@ class VTYInteract(object):
             return
 
         if debug_tcp_sockets:
-            VTYInteract.all_sockets.remove(self.socket)
+            try:
+                VTYInteract.all_sockets.remove(self.socket)
+            except ValueError:
+                pass
             print "Socket: closing %s:%d %r (%d sockets open)" % (
                     self.host, self.port, self.socket,
                     len(VTYInteract.all_sockets))
