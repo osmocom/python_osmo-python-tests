@@ -41,6 +41,7 @@ def cmd(what):
 def print_used_tcp_sockets():
     if not debug_tcp_sockets:
         return
+    cmd('ls /proc/self/fd');
     cmd('ss -tn');
     cmd('ss -tln');
     cmd('ps xua | grep osmo');
