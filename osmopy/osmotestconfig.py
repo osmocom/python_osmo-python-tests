@@ -64,6 +64,7 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
         print >> sys.stderr, "Failed to verify %s" % ' '.join(cmd)
         print >> sys.stderr, "Current directory: %s" % os.getcwd()
         print >> sys.stderr, "Error was %s" % se
+        print >> sys.stderr, "Config was\n%s" % open(config).read()
         raise se
 
     finally:
