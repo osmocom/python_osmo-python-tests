@@ -47,13 +47,27 @@ def end_proc(proc):
         return
 
     proc.terminate()
-    time.sleep(.1)
-    rc = proc.poll()
-    if rc is not None:
-        print "Terminated child process"
-    else:
+    time_to_wait_for_term = 5
+    wait_step = 0.001
+    waited_time = 0
+    while True:
+        # poll returns None if proc is still running
+        rc = proc.poll()
+        if rc is not None:
+            break
+        waited_time += wait_step
+        # make wait_step approach 1.0
+        wait_step = (1. + 5. * wait_step) / 6.
+        if waited_time >= time_to_wait_for_term:
+            break
+        time.sleep(wait_step)
+
+    if proc.poll() is None:
+        # termination seems to be slower than that, let's just kill
         proc.kill()
         print "Killed child process"
+    elif waited_time > .002:
+        print "Terminating took %.3fs" % waited_time
     proc.wait()
 
 
