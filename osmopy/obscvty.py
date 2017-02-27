@@ -68,6 +68,19 @@ class VTYInteract(object):
         self.priv_end = re.compile('\r\n%s(?:\(([\w-]*)\))?# $' % self.name)
         self.last_node = ''
 
+    def _connect_socket(self):
+        if self.socket is not None:
+            return
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setblocking(1)
+        self.socket.connect((self.host, self.port))
+        if debug_tcp_sockets:
+            VTYInteract.all_sockets.append(self.socket)
+            print "Socket: connected to %s:%d %r (%d sockets open)" % (
+                    self.host, self.port, self.socket,
+                    len(VTYInteract.all_sockets))
+        self.socket.recv(4096)
+
     def _close_socket(self):
         global debug_tcp_sockets
         if self.socket is None:
@@ -141,16 +154,8 @@ class VTYInteract(object):
         global debug_tcp_sockets
         if not ends:
             ends = [self.norm_end, self.priv_end]
-        if not self.socket:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.setblocking(1)
-            self.socket.connect((self.host, self.port))
-            if debug_tcp_sockets:
-                VTYInteract.all_sockets.append(self.socket)
-                print "Socket: connected to %s:%d %r (%d sockets open)" % (
-                        self.host, self.port, self.socket,
-                        len(VTYInteract.all_sockets))
-            self.socket.recv(4096)
+
+        self._connect_socket()
 
         # Now send the command
         self.socket.send("%s\r" % request)
