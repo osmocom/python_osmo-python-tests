@@ -41,7 +41,6 @@ class TestVTY(unittest.TestCase):
         except OSError:
             print >> sys.stderr, "Current directory: %s" % os.getcwd()
             print >> sys.stderr, "Consider setting -b"
-        time.sleep(1)
 
         appstring = osmoappdesc.vty_app[2]
         appport = osmoappdesc.vty_app[0]

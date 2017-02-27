@@ -20,6 +20,7 @@ import re
 import socket
 import sys, subprocess
 import os
+import time
 
 """VTYInteract: interact with an osmocom vty
 
@@ -71,13 +72,29 @@ class VTYInteract(object):
     def _connect_socket(self):
         if self.socket is not None:
             return
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setblocking(1)
-        self.socket.connect((self.host, self.port))
+        retries = 30
+        took = 0
+        while True:
+            took += 1
+            try:
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.setblocking(1)
+                self.socket.connect((self.host, self.port))
+            except IOError:
+                retries -= 1
+                if retries <= 0:
+                    raise
+                # possibly the binary hasn't launched yet
+                if debug_tcp_sockets:
+                    print "Connecting socket failed, retrying..."
+                time.sleep(.1)
+                continue
+            break
+
         if debug_tcp_sockets:
             VTYInteract.all_sockets.append(self.socket)
-            print "Socket: connected to %s:%d %r (%d sockets open)" % (
-                    self.host, self.port, self.socket,
+            print "Socket: in %d tries, connected to %s:%d %r (%d sockets open)" % (
+                    took, self.host, self.port, self.socket,
                     len(VTYInteract.all_sockets))
         self.socket.recv(4096)
 

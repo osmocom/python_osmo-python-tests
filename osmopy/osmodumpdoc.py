@@ -48,7 +48,6 @@ def dump_configs(apps, configs):
             print >> sys.stderr, "Skipping app %s" % appname
             failures += 1
         else:
-            time.sleep(1)
             try:
                 dump_doc(app[2], app[0], 'doc/%s_vty_reference.xml' % appname)
                 successes += 1

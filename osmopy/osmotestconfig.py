@@ -55,7 +55,6 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
             print "Verifying %s, test %s" % (' '.join(cmd), run_test.__name__)
 
         proc = osmoutil.popen_devnull(cmd)
-        time.sleep(1)
         end = app_desc[2]
         port = app_desc[0]
         vty = obscvty.VTYInteract(end, "127.0.0.1", port)
