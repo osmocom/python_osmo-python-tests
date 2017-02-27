@@ -172,11 +172,13 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
         configs = app_configs[app[3]]
         for config in configs:
             config = os.path.join(confpath, config)
-            errors |= test_config(app, config, tmpdir, verbose)
+            errors += test_config(app, config, tmpdir, verbose)
 
     if rmtmp or not errors:
         remove_tmpdir(tmpdir)
 
+    if errors:
+        print >> sys.stderr, "ERRORS: %d" % errors
     return errors
 
 
