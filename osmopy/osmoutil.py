@@ -19,6 +19,7 @@ import os
 import sys
 import importlib
 import time
+import unittest
 
 
 """Run a command, with stdout and stderr directed to devnull"""
@@ -69,3 +70,24 @@ def importappconf_or_quit(dirname, confname, p_set):
         else:
             print >> sys.stderr, "set osmoappdesc location with -p <dir>"
         sys.exit(1)
+
+
+def pick_tests(suite, *name_snippets):
+    '''for unittest: Non-standard way of picking only selected tests to run,
+       by name.  Kind of stupid of python unittest to not provide this feature
+       more easily.'''
+
+    new_tests = []
+    for t in suite._tests:
+        if isinstance(t, unittest.suite.TestSuite):
+            pick_tests(t, *name_snippets)
+            new_tests.append(t)
+            continue
+
+        if not isinstance(t, unittest.TestCase):
+            new_tests.append(t)
+            continue
+
+        if any([n.lower() in t._testMethodName.lower() for n in name_snippets]):
+            new_tests.append(t)
+    suite._tests = new_tests
