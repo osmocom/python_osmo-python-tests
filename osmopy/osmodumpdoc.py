@@ -21,6 +21,7 @@ def dump_doc(name, port, filename):
     out = open(filename, 'w')
     out.write(xml)
     out.close()
+    print 'generated %r' % filename
 
 
 """Dump the config of all the apps.
