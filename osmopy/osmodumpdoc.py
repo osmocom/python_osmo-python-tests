@@ -28,7 +28,7 @@ def dump_doc(name, port, filename):
 Returns the number of apps configs could not be dumped for."""
 
 
-def dump_configs(apps, configs):
+def dump_configs(apps, configs, confpath):
     failures = 0
     successes = 0
 
@@ -41,7 +41,7 @@ def dump_configs(apps, configs):
         appname = app[3]
         print "Starting app for %s" % appname
         proc = None
-        cmd = [app[1], "-c", configs[appname][0]]
+        cmd = [app[1], "-c", os.path.join(confpath, configs[appname][0])]
         try:
             proc = subprocess.Popen(cmd, stdin=None, stdout=None)
         except OSError:  # Probably a missing binary
@@ -82,9 +82,10 @@ if __name__ == '__main__':
     osmoappdesc = osmoutil.importappconf_or_quit(
         confpath, "osmoappdesc", args.p)
 
+    confpath = os.path.relpath(confpath, workdir)
     os.chdir(workdir)
     num_fails, num_sucs = dump_configs(
-        osmoappdesc.apps, osmoappdesc.app_configs)
+        osmoappdesc.apps, osmoappdesc.app_configs, confpath)
     if num_fails > 0:
         print >> sys.stderr, "Warning: Skipped %s apps" % num_fails
         if 0 == num_sucs:
