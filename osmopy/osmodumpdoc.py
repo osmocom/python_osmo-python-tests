@@ -42,9 +42,11 @@ def dump_configs(apps, configs, confpath):
         print "Starting app for %s" % appname
         proc = None
         cmd = [app[1], "-c", os.path.join(confpath, configs[appname][0])]
+        print 'cd', os.path.abspath(os.path.curdir), ';', ' '.join(cmd)
         try:
             proc = subprocess.Popen(cmd, stdin=None, stdout=None)
-        except OSError:  # Probably a missing binary
+        except OSError as e:  # Probably a missing binary
+            print >> sys.stderr, e
             print >> sys.stderr, "Skipping app %s" % appname
             failures += 1
         else:
