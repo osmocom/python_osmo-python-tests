@@ -17,15 +17,20 @@
 
 from distutils.core import setup
 from osmopy import __version__
+import sys
+
+if sys.version_info.major == 2:
+	scripts = ["osmopy/osmodumpdoc.py",  "osmopy/osmotestconfig.py",
+	           "osmopy/osmotestvty.py"]
+elif sys.version_info.major == 3:
+	scripts = ["osmopy/osmo_verify_transcript_vty.py",
+		   "osmopy/osmo_verify_transcript_ctrl.py"]
 
 setup(
     name = 'osmopython',
     version = __version__,
     packages = ["osmopy"],
-    scripts = ["osmopy/osmodumpdoc.py",  "osmopy/osmotestconfig.py",
-                "osmopy/osmotestvty.py",
-                "osmopy/osmo_verify_transcript_vty.py",
-                "osmopy/osmo_verify_transcript_ctrl.py"],
+    scripts = scripts,
     license = "AGPLv3",
     description = "Osmopython: osmocom testing scripts",
     author = "Katerina Barone-Adesi",
