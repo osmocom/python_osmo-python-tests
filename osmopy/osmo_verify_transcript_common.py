@@ -242,6 +242,13 @@ class Interact:
             return 'Did not expect line %r' % got[g]
         return True
 
+    def feed_commands(self, output, command_strs):
+        for command_str in command_strs:
+            for command in command_str.splitlines():
+                res = self.command(command)
+                output.write('\n'.join(res))
+                output.write('\n')
+
 def end_process(proc):
     if not proc:
         return
@@ -285,30 +292,32 @@ class Application:
             Application._devnull = open(os.devnull, 'w')
         return Application._devnull
 
-    def __init__(self, command_tuple, purge_output=True):
-        self.command_tuple = command_tuple
+    def __init__(self, run_app_str, purge_output=True, quiet=False):
+        self.command_tuple = shlex.split(run_app_str)
         self.purge_output = purge_output
+        self.quiet = quiet
 
     def run(self):
         out_err = None
         if self.purge_output:
             out_err = Application.devnull()
 
-        print('Launching: cd %r; %s' % (os.getcwd(), ' '.join(self.command_tuple)))
+        if not self.quiet:
+            print('Launching: cd %r; %s' % (os.getcwd(), ' '.join(self.command_tuple)))
         self.proc = subprocess.Popen(self.command_tuple, stdout=out_err, stderr=out_err)
 
     def stop(self):
         end_process(self.proc)
 
-def verify_application(command_tuple, interact, transcript_file, verbose):
+def verify_application(run_app_str, interact, transcript_file, verbose):
     passed = None
     application = None
 
     sys.stdout.flush()
     sys.stderr.flush()
 
-    if command_tuple:
-        application = Application(command_tuple, purge_output=not verbose)
+    if run_app_str:
+        application = Application(run_app_str, purge_output=not verbose)
         application.run()
 
     try:
@@ -330,7 +339,7 @@ def verify_application(command_tuple, interact, transcript_file, verbose):
 
 def common_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-r', '--run', dest='command_str',
+    parser.add_argument('-r', '--run', dest='run_app_str',
                         help='command to run to launch application to test,'
                         ' including command line arguments. If omitted, no'
                         ' application is launched.')
@@ -344,19 +353,76 @@ def common_parser():
                         ' FILES.')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Print commands and application output')
+    parser.add_argument('-O', '--output', dest='output_path',
+                        help="Do not verify a transcript file, but directly"
+                        " write command results to a file, '-' means stdout."
+                        " If input files are provided, these must not be transcript"
+                        " files, but bare commands, one per line, without"
+                        " prompts nor expected results."
+                        " If neither --command nor input files are"
+                        " provided, read commands from stdin."
+                        " Ignore '--update'.")
+    parser.add_argument('-c', '--command', dest='cmd_str',
+                        help="Run this command instead of reading from a"
+                        " transcript file, multiple commands may be separated"
+                        " by ';'. Implies '-O -' unless -O is passed.")
     parser.add_argument('transcript_files', nargs='*', help='transcript files to verify')
     return parser
 
-def main(command_str, transcript_files, interact, verbose):
-
-    if command_str:
-        command_tuple = shlex.split(command_str)
+def run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
+    to_stdout = False
+    if output_path == '-':
+        to_stdout = True
+        output = sys.stdout
     else:
-        command_tuple = None
+        output = open(output_path, 'w')
 
+    application = None
+
+    if run_app_str:
+        application = Application(run_app_str, quiet=to_stdout)
+        application.run()
+
+    try:
+        interact.connect()
+
+        if cmd_str:
+            interact.feed_commands(output, cmd_str.split(';'))
+
+        for f_path in (cmd_files or []):
+            with open(f_path, 'r') as f:
+                interact.feed_commands(output, f.read().decode('utf-8').splitlines())
+
+        if not (cmd_str or cmd_files):
+            while True:
+                line = sys.stdin.readline()
+                if not line:
+                    break;
+                interact.feed_commands(output, line.split(';'))
+    except:
+        traceback.print_exc()
+    finally:
+        if not to_stdout:
+            try:
+                output.close()
+            except:
+                traceback.print_exc()
+
+        try:
+            interact.close()
+        except:
+            traceback.print_exc()
+
+        if application:
+            try:
+                application.stop()
+            except:
+                traceback.print_exc()
+
+def verify_transcripts(run_app_str, transcript_files, interact, verbose):
     results = []
     for t in transcript_files:
-        passed = verify_application(command_tuple=command_tuple,
+        passed = verify_application(run_app_str=run_app_str,
                                     interact=interact,
                                     transcript_file=t,
                                     verbose=verbose)
@@ -371,5 +437,19 @@ def main(command_str, transcript_files, interact, verbose):
 
     if not all_passed:
         sys.exit(1)
+
+def main(run_app_str, output_path, cmd_str, transcript_files, interact, verbose):
+
+    # If there is a command to run, pipe to stdout by default.
+    # If there are no input files nor commands to run, read from stdin
+    # and write results to stdout.
+    if not output_path:
+        if cmd_str or (not cmd_str and not transcript_files):
+            output_path = '-'
+
+    if output_path:
+        run_commands(run_app_str, output_path, cmd_str, transcript_files, interact)
+    else:
+        verify_transcripts(run_app_str, transcript_files, interact, verbose)
 
 # vim: tabstop=4 shiftwidth=4 expandtab nocin ai

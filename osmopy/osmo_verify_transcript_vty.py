@@ -179,13 +179,21 @@ if __name__ == '__main__':
                         help="Name used in application's telnet VTY prompt."
                         " If omitted, will attempt to determine the name from"
                         " the initial VTY prompt.")
+    parser.add_argument('-X', '--gen-xml-ref', dest='gen_xml', action='store_true',
+                        help="Equivalent to '-c \"show online-help\" -O -',"
+                        " can be used to generate the VTY reference file as"
+                        " required by osmo-gsm-manuals.git.")
     args = parser.parse_args()
+
+    if args.gen_xml:
+        if args.cmd_str:
+            raise Exception('It does not make sense to pass both --command and'
+                            ' --gen-xml-ref.')
+        args.cmd_str = 'show online-help'
 
     interact = InteractVty(args.prompt, args.port, args.host, args.verbose, args.update)
 
-    main(command_str=args.command_str,
-         transcript_files=args.transcript_files,
-         interact=interact,
-         verbose=args.verbose)
+    main(args.run_app_str, args.output_path, args.cmd_str,
+         args.transcript_files, interact, args.verbose)
 
 # vim: tabstop=4 shiftwidth=4 expandtab nocin ai

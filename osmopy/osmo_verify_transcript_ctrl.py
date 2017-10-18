@@ -112,9 +112,7 @@ if __name__ == '__main__':
 
     interact = InteractCtrl(args.port, args.host, args.verbose, args.update, args.keep_ids)
 
-    main(command_str=args.command_str,
-         transcript_files=args.transcript_files,
-         interact=interact,
-         verbose=args.verbose)
+    main(args.run_app_str, args.output_path, args.cmd_str,
+         args.transcript_files, interact, args.verbose)
 
 # vim: tabstop=4 shiftwidth=4 expandtab nocin ai
