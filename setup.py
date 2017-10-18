@@ -23,7 +23,9 @@ if sys.version_info.major == 2:
 	scripts = ["osmopy/osmodumpdoc.py",  "osmopy/osmotestconfig.py",
 	           "osmopy/osmotestvty.py"]
 elif sys.version_info.major == 3:
-	scripts = ["osmopy/osmo_verify_transcript_vty.py",
+	scripts = ["osmopy/osmo_interact_vty.py",
+		   "osmopy/osmo_interact_ctrl.py",
+		   "osmopy/osmo_verify_transcript_vty.py",
 		   "osmopy/osmo_verify_transcript_ctrl.py"]
 
 setup(

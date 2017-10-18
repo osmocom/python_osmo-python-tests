@@ -19,7 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Common code for verify_transcript_vty.py and verify_transcript_ctrl.py.
+Common code for osmo_interact_vty.py and osmo_interact_ctrl.py.
+This implements all of application interaction, piping and verification.
+osmo_interact_{vty,ctrl}.py plug VTY and CTRL interface specific bits.
 '''
 
 import argparse
@@ -249,13 +251,14 @@ class Interact:
                 output.write('\n'.join(res))
                 output.write('\n')
 
-def end_process(proc):
+def end_process(proc, quiet=False):
     if not proc:
         return
 
     rc = proc.poll()
     if rc is not None:
-        print('Process has already terminated with', rc)
+        if not quiet:
+            print('Process has already terminated with', rc)
         proc.wait()
         return
 
@@ -277,9 +280,11 @@ def end_process(proc):
     if proc.poll() is None:
         # termination seems to be slower than that, let's just kill
         proc.kill()
-        print("Killed child process")
+        if not quiet:
+            print("Killed child process")
     elif waited_time > .002:
-        print("Terminating took %.3fs" % waited_time)
+        if not quiet:
+            print("Terminating took %.3fs" % waited_time)
     proc.wait()
 
 class Application:
@@ -307,7 +312,7 @@ class Application:
         self.proc = subprocess.Popen(self.command_tuple, stdout=out_err, stderr=out_err)
 
     def stop(self):
-        end_process(self.proc)
+        end_process(self.proc, self.quiet)
 
 def verify_application(run_app_str, interact, transcript_file, verbose):
     passed = None
@@ -347,31 +352,31 @@ def common_parser():
                         help="Port that the application opens.")
     parser.add_argument('-H', '--host', dest='host', default='localhost',
                         help="Host that the application opens the port on.")
+    return parser
+
+def parser_add_verify_args(parser):
     parser.add_argument('-u', '--update', dest='update', action='store_true',
                         help='Do not verify, but OVERWRITE transcripts based on'
                         ' the applications current behavior. OVERWRITES TRANSCRIPT'
                         ' FILES.')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Print commands and application output')
-    parser.add_argument('-O', '--output', dest='output_path',
-                        help="Do not verify a transcript file, but directly"
-                        " write command results to a file, '-' means stdout."
-                        " If input files are provided, these must not be transcript"
-                        " files, but bare commands, one per line, without"
-                        " prompts nor expected results."
-                        " If neither --command nor input files are"
-                        " provided, read commands from stdin."
-                        " Ignore '--update'.")
-    parser.add_argument('-c', '--command', dest='cmd_str',
-                        help="Run this command instead of reading from a"
-                        " transcript file, multiple commands may be separated"
-                        " by ';'. Implies '-O -' unless -O is passed.")
-    parser.add_argument('transcript_files', nargs='*', help='transcript files to verify')
+    parser.add_argument('transcript_files', nargs='*', help='transcript file(s) to verify')
     return parser
 
-def run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
+def parser_add_run_args(parser):
+    parser.add_argument('-O', '--output', dest='output_path',
+                        help="Write command results to a file instead of stdout."
+                        "('-O -' writes to stdout and is the default)")
+    parser.add_argument('-c', '--command', dest='cmd_str',
+                        help="Run this command (before reading input files, if any)."
+                        " multiple commands may be separated by ';'")
+    parser.add_argument('cmd_files', nargs='*', help='file(s) with plain commands to run')
+    return parser
+
+def main_run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
     to_stdout = False
-    if output_path == '-':
+    if not output_path or output_path == '-':
         to_stdout = True
         output = sys.stdout
     else:
@@ -419,7 +424,7 @@ def run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
             except:
                 traceback.print_exc()
 
-def verify_transcripts(run_app_str, transcript_files, interact, verbose):
+def main_verify_transcripts(run_app_str, transcript_files, interact, verbose):
     results = []
     for t in transcript_files:
         passed = verify_application(run_app_str=run_app_str,
@@ -437,19 +442,5 @@ def verify_transcripts(run_app_str, transcript_files, interact, verbose):
 
     if not all_passed:
         sys.exit(1)
-
-def main(run_app_str, output_path, cmd_str, transcript_files, interact, verbose):
-
-    # If there is a command to run, pipe to stdout by default.
-    # If there are no input files nor commands to run, read from stdin
-    # and write results to stdout.
-    if not output_path:
-        if cmd_str or (not cmd_str and not transcript_files):
-            output_path = '-'
-
-    if output_path:
-        run_commands(run_app_str, output_path, cmd_str, transcript_files, interact)
-    else:
-        verify_transcripts(run_app_str, transcript_files, interact, verbose)
 
 # vim: tabstop=4 shiftwidth=4 expandtab nocin ai
