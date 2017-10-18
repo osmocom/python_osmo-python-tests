@@ -99,7 +99,6 @@ class InteractVty(Interact):
 
     def __init__(self, prompt, port, host, verbose, update):
         self.prompt = prompt
-        self.re_prompt = re.compile('^%s(?:\(([\w-]*)\))?([#>]) (.*)$' % self.prompt)
         super().__init__(InteractVty.VtyStep, port, host, verbose, update)
 
     def connect(self):
@@ -110,7 +109,19 @@ class InteractVty(Interact):
 
         super().connect()
         # receive the first welcome message and discard
-        self.socket.recv(4096)
+        data = self.socket.recv(4096)
+        if not self.prompt:
+            b = data
+            b = b[b.rfind(b'\n') + 1:]
+            while b and (b[0] < ord('A') or b[0] > ord('z')):
+                b = b[1:]
+            prompt_str = b.decode('utf-8')
+            if '>' in prompt_str:
+                self.prompt = prompt_str[:prompt_str.find('>')]
+        if not self.prompt:
+            raise Exception('Could not find application name; needed to decode prompts.'
+                            ' Initial data was: %r' % data)
+        self.re_prompt = re.compile('^%s(?:\(([\w-]*)\))?([#>]) (.*)$' % self.prompt)
 
     def _command(self, command_str, timeout=10):
         self.socket.send(command_str.encode())
@@ -165,7 +176,9 @@ class InteractVty(Interact):
 if __name__ == '__main__':
     parser = common_parser()
     parser.add_argument('-n', '--prompt-name', dest='prompt',
-                        help="Name used in application's telnet VTY prompt.")
+                        help="Name used in application's telnet VTY prompt."
+                        " If omitted, will attempt to determine the name from"
+                        " the initial VTY prompt.")
     args = parser.parse_args()
 
     interact = InteractVty(args.prompt, args.port, args.host, args.verbose, args.update)
