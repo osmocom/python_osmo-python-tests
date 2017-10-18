@@ -349,15 +349,15 @@ def common_parser():
                         ' including command line arguments. If omitted, no'
                         ' application is launched.')
     parser.add_argument('-p', '--port', dest='port',
-                        help="Port that the application opens.")
+                        help="Port to reach the application at.")
     parser.add_argument('-H', '--host', dest='host', default='localhost',
-                        help="Host that the application opens the port on.")
+                        help="Host to reach the application at.")
     return parser
 
 def parser_add_verify_args(parser):
     parser.add_argument('-u', '--update', dest='update', action='store_true',
                         help='Do not verify, but OVERWRITE transcripts based on'
-                        ' the applications current behavior. OVERWRITES TRANSCRIPT'
+                        ' the application\'s current behavior. OVERWRITES TRANSCRIPT'
                         ' FILES.')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Print commands and application output')

@@ -142,6 +142,7 @@ class InteractVty(Interact):
 
         received_lines = self._command(command_str, timeout)
 
+        # send escape to cancel the '?' command line
         if command_str[-1] == '?':
             self._command('\x03', timeout)
 
