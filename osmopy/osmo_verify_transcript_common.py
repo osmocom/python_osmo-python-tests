@@ -70,6 +70,9 @@ class Interact:
         self.verbose = verbose
         self.update = update
 
+        if not port:
+            raise Exception("You need to provide port number to connect to")
+
     def connect(self):
         assert self.socket is None
         retries = 30
