@@ -25,6 +25,9 @@ if sys.version_info.major == 2:
 elif sys.version_info.major == 3:
 	scripts = ["osmopy/osmo_interact_vty.py",
 		   "osmopy/osmo_interact_ctrl.py",
+		   "osmopy/soap.py",
+		   "osmopy/osmo_ctrl.py",
+		   "osmopy/twisted_ipa.py",
 		   "osmopy/osmo_verify_transcript_vty.py",
 		   "osmopy/osmo_verify_transcript_ctrl.py"]
 
