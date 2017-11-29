@@ -32,6 +32,7 @@ import time
 import traceback
 import socket
 import shlex
+import re
 
 
 class Interact:
@@ -210,25 +211,47 @@ class Interact:
         - In 'expect', if a line is exactly '...', it matches any number of
           arbitrary lines in 'got'; the implementation is trivial and skips
           lines to the first occurence in 'got' that continues after '...'.
+        - If an 'expect' line is '... !regex', it matches any number of
+          lines like '...', but the given regex must not match any of those
+          lines.
 
         Return 'True' on match, or a string describing the mismatch.
         '''
         def match_line(expect_line, got_line):
             return expect_line == got_line
 
+        ANY = '...'
+        ANY_EXCEPT = '... !'
+
         e = 0
         g = 0
         while e < len(expect):
-            if expect[e] == '...':
+            if expect[e] == ANY or expect[e].startswith(ANY_EXCEPT):
+                wildcard = expect[e]
                 e += 1
+                g_end = g
 
                 if e >= len(expect):
                     # anything left in 'got' is accepted.
-                    return True
+                    g_end = len(got)
 
                 # look for the next occurence of the expected line in 'got'
-                while g < len(got) and not match_line(expect[e], got[g]):
-                    g += 1
+                while g_end < len(got) and not match_line(expect[e], got[g_end]):
+                    g_end += 1
+
+                if wildcard == ANY:
+                    # no restrictions on lines
+                    g = g_end
+
+                elif wildcard.startswith(ANY_EXCEPT):
+                    except_re = re.compile(wildcard[len(ANY_EXCEPT):])
+                    while g < g_end:
+                        if except_re.search(got[g]):
+                          return ('Got forbidden line for wildcard %r:'
+                                  ' did not expect %r in line %d of response'
+                                  % (wildcard, got[g], g))
+                        g += 1
+
                 continue
 
             if g >= len(got):
