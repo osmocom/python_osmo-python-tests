@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 from osmopy import __version__
 import sys
 
@@ -35,7 +35,7 @@ elif sys.version_info.major == 3:
 setup(
     name = 'osmopython',
     version = __version__,
-    packages = ["osmopy"],
+    packages = find_packages(),
     scripts = scripts,
     license = "AGPLv3",
     description = "Osmopython: osmocom testing scripts",
