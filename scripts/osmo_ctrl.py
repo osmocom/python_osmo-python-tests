@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 """
-
+from __future__ import print_function
 from optparse import OptionParser
 from osmopy.osmo_ipa import Ctrl
 import socket
@@ -30,7 +30,7 @@ verbose = False
 
 def connect(host, port):
         if verbose:
-                print "Connecting to host %s:%i" % (host, port)
+                print("Connecting to host %s:%i" % (host, port))
 
         sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sck.setblocking(1)
@@ -57,13 +57,13 @@ def _leftovers(sck, fl):
         """
         try:
                 data = sck.recv(1024, fl)
-        except socket.error as (s_errno, strerror):
+        except socket.error as _:
                 return False
         if len(data) != 0:
                 tail = data
                 while True:
                         (head, tail) = Ctrl().split_combined(tail)
-                        print "Got message:", Ctrl().rem_header(head)
+                        print("Got message:", Ctrl().rem_header(head))
                         if len(tail) == 0:
                                 break
                 return True
@@ -103,18 +103,18 @@ if __name__ == '__main__':
                 if len(args) < 2:
                         parser.error("Set requires var and value arguments")
                 _leftovers(sock, socket.MSG_DONTWAIT)
-                print "Got message:", set_var(sock, args[0], ' '.join(args[1:]))
+                print("Got message:", set_var(sock, args[0], ' '.join(args[1:])))
 
         if options.cmd_get:
                 if len(args) != 1:
                         parser.error("Get requires the var argument")
                 _leftovers(sock, socket.MSG_DONTWAIT)
                 (a, _, _) = do_set_get(sock, args[0])
-                print "Got message:", a
+                print("Got message:", a)
 
         if options.monitor:
                 while True:
                         if not _leftovers(sock, 0):
-                                print "Connection is gone."
+                                print("Connection is gone.")
                                 break
         sock.close()

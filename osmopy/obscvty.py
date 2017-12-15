@@ -16,6 +16,7 @@
 #
 # VTY helper code for OpenBSC
 #
+from __future__ import print_function
 import re
 import socket
 import sys, subprocess
@@ -31,12 +32,12 @@ Methods: __init__, command, enabled_command, verify, w_verify"""
 debug_tcp_sockets = (os.getenv('OSMOPY_DEBUG_TCP_SOCKETS', '0') != '0')
 
 def cmd(what):
-    print '\n> %s' % what
+    print('\n> %s' % what)
     sys.stdout.flush()
     subprocess.call(what, shell=True)
     sys.stdout.flush()
     sys.stderr.flush()
-    print ''
+    print('')
     sys.stdout.flush()
 
 def print_used_tcp_sockets():
@@ -86,16 +87,16 @@ class VTYInteract(object):
                     raise
                 # possibly the binary hasn't launched yet
                 if debug_tcp_sockets:
-                    print "Connecting socket failed, retrying..."
+                    print("Connecting socket failed, retrying...")
                 time.sleep(.1)
                 continue
             break
 
         if debug_tcp_sockets:
             VTYInteract.all_sockets.append(self.socket)
-            print "Socket: in %d tries, connected to %s:%d %r (%d sockets open)" % (
+            print("Socket: in %d tries, connected to %s:%d %r (%d sockets open)" % (
                     took, self.host, self.port, self.socket,
-                    len(VTYInteract.all_sockets))
+                    len(VTYInteract.all_sockets)))
         self.socket.recv(4096)
 
     def _close_socket(self):
@@ -108,9 +109,9 @@ class VTYInteract(object):
                 VTYInteract.all_sockets.remove(self.socket)
             except ValueError:
                 pass
-            print "Socket: closing %s:%d %r (%d sockets open)" % (
+            print("Socket: closing %s:%d %r (%d sockets open)" % (
                     self.host, self.port, self.socket,
-                    len(VTYInteract.all_sockets))
+                    len(VTYInteract.all_sockets)))
         self.socket.close()
         self.socket = None
 
@@ -248,7 +249,7 @@ class VTYInteract(object):
 
         if loud:
             if res != results:
-                print "Rec: %s\nExp: %s" % (res, results)
+                print("Rec: %s\nExp: %s" % (res, results))
 
         return res == results
 

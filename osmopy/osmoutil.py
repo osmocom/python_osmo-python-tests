@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import subprocess
 import os
 import sys
@@ -30,10 +31,10 @@ def popen_devnull(cmd, verbose=True):
     global devnull
     if devnull is None:
         if verbose:
-            print "Opening /dev/null"
+            print("Opening /dev/null")
         devnull = open(os.devnull, 'w')
     if verbose:
-        print "Launching: PWD=%s %s" % (os.getcwd(), ' '.join([repr(c) for c in cmd]))
+        print("Launching: PWD=%s %s" % (os.getcwd(), ' '.join([repr(c) for c in cmd])))
     return subprocess.Popen(cmd, stdout=devnull, stderr=devnull)
 
 
@@ -65,9 +66,9 @@ def end_proc(proc):
     if proc.poll() is None:
         # termination seems to be slower than that, let's just kill
         proc.kill()
-        print "Killed child process"
+        print("Killed child process")
     elif waited_time > .002:
-        print "Terminating took %.3fs" % waited_time
+        print("Terminating took %.3fs" % waited_time)
     proc.wait()
 
 
@@ -80,9 +81,9 @@ def importappconf_or_quit(dirname, confname, p_set):
         return importlib.import_module(confname)
     except ImportError as e:
         if p_set:
-            print >> sys.stderr, "osmoappdesc not found in %s" % dirname
+            print("osmoappdesc not found in %s" % dirname, file=sys.stderr)
         else:
-            print >> sys.stderr, "set osmoappdesc location with -p <dir>"
+            print("set osmoappdesc location with -p <dir>", file=sys.stderr)
         sys.exit(1)
 
 
