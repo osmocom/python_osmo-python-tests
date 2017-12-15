@@ -20,17 +20,15 @@ from osmopy import __version__
 import sys
 
 if sys.version_info.major == 2:
-	scripts = ["osmopy/osmodumpdoc.py",  "osmopy/osmotestconfig.py",
-	           "osmopy/osmotestvty.py"]
+	scripts = ["scripts/osmodumpdoc.py",  "scripts/osmotestconfig.py",
+	           "scripts/osmotestvty.py"]
 elif sys.version_info.major == 3:
-	scripts = ["osmopy/osmo_interact_vty.py",
-		   "osmopy/osmo_interact_ctrl.py",
-		   "osmopy/soap.py",
-		   "osmopy/osmo_ctrl.py",
-		   "osmopy/osmo_ipa.py",
-		   "osmopy/twisted_ipa.py",
-		   "osmopy/osmo_verify_transcript_vty.py",
-		   "osmopy/osmo_verify_transcript_ctrl.py"]
+	scripts = ["scripts/osmo_interact_vty.py",
+		   "scripts/osmo_interact_ctrl.py",
+		   "scripts/soap.py",
+		   "scripts/twisted_ipa.py",
+		   "scripts/osmo_verify_transcript_vty.py",
+		   "scripts/osmo_verify_transcript_ctrl.py"]
 
 setup(
     name = 'osmopython',
