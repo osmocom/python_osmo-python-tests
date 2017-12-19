@@ -87,7 +87,30 @@ class InteractCtrl(Interact):
         return split_responses
 
 def main_interact_ctrl():
-    parser = common_parser()
+    '''
+Run CTRL commands against a given application by stdin/stdout piping.
+
+Optionally, this can launch and tear down the application with -r.
+
+For example, to start a session that allows typing CTRL commands on stdin:
+
+  osmo_interact_ctrl.py -p 4259 \\
+    -r 'osmo-hlr -c /etc/osmocom/osmo-hlr.cfg -l /tmp/hlr.db'
+
+Where 4259 is OsmoHLR's CTRL port number, see
+https://osmocom.org/projects/cellular-infrastructure/wiki/Port_Numbers
+
+If osmo-hlr is already running, this shortens to just
+
+  osmo_interact_ctrl.py -p 4259
+
+See also osmo_verify_transcript_vty.py, which allows verifying and updating
+complete CTRL session transcripts, in essence to write CTRL tests from a screen
+dump of a CTRL session.
+
+A VTY equivalent is osmo_interact_vty.py.
+'''
+    parser = common_parser(__doc__)
     parser_add_run_args(parser)
     args = parser.parse_args()
 
@@ -99,7 +122,44 @@ def main_interact_ctrl():
 
 
 def main_verify_transcript_ctrl():
-    parser = common_parser()
+    '''
+A CTRL transcript contains CTRL commands and their expected results.
+It looks like:
+
+"
+SET 1 var val
+SET_REPLY 1 var OK
+
+GET 2 var
+GET_REPLY 2 var val
+"
+
+Optionally, this can launch and tear down the application with -r.
+
+For example, if above transcript example is in file test.ctrl, you can verify
+that OsmoHLR still shows this behavior by:
+
+  osmo_interact_ctrl.py -p 4259 \\
+    -r 'osmo-hlr -c /etc/osmocom/osmo-hlr.cfg -l /tmp/hlr.db' \\
+    test.ctrl
+
+Where 4259 is OsmoHLR's CTRL port number, see
+https://osmocom.org/projects/cellular-infrastructure/wiki/Port_Numbers
+
+If osmo-hlr is already running, this shortens to just
+
+  osmo_interact_ctrl.py -p 4259 test.ctrl
+
+If osmo-hlr has changed its behavior, e.g. some reply changed, the transcript
+can be automatically updated, which overwrites the file, like:
+
+  osmo_interact_ctrl.py -p 4259 -u test.ctrl
+
+See also osmo_interact_ctrl.py, which allows piping CTRL commands to stdin.
+
+A VTY equivalent is osmo_verify_transcript_vty.py.
+'''
+    parser = common_parser(__doc__)
     parser_add_verify_args(parser)
     parser.add_argument('-i', '--keep-ids', dest='keep_ids', action='store_true',
                         help='With --update, default is to overwrite the command IDs'

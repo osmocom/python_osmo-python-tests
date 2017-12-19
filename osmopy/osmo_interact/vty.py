@@ -156,7 +156,30 @@ def parser_add_vty_args(parser):
     return parser
 
 def main_interact_vty():
-    parser = common_parser()
+    '''
+Run VTY commands against a given application by stdin/stdout piping.
+
+Optionally, this can launch and tear down the application with -r.
+
+For example, to extract the VTY reference XML file from osmo-hlr:
+
+  osmo_interact_vty.py -p 4258 --gen-xml-ref \\
+    -r 'osmo-hlr -c /etc/osmocom/osmo-hlr.cfg -l /tmp/hlr.db'
+
+Where 4258 is OsmoHLR's VTY port number, see
+https://osmocom.org/projects/cellular-infrastructure/wiki/Port_Numbers
+
+If osmo-hlr is already running, this shortens to just
+
+  osmo_interact_vty.py -p 4258 --gen-xml-ref
+
+See also osmo_verify_transcript_vty.py, which allows verifying and updating
+complete VTY session transcripts, in essence to write VTY tests from a screen
+dump of a VTY session.
+
+A Control interface equivalent is osmo_interact_ctrl.py.
+'''
+    parser = common_parser(__doc__)
     parser_add_vty_args(parser)
     parser_add_run_args(parser)
     parser.add_argument('-X', '--gen-xml-ref', dest='gen_xml', action='store_true',
@@ -178,7 +201,52 @@ def main_interact_vty():
                       args.cmd_files, interact)
 
 def main_verify_transcript_vty():
-    parser = common_parser()
+    '''
+A VTY transcript contains VTY commands and their expected results.
+It looks like a screen dump of a live VTY session:
+
+"
+OsmoHLR> enable
+
+OsmoHLR# subscriber show imsi 123456789023000
+% No subscriber for imsi = '123456789023000'
+OsmoHLR# subscriber show msisdn 12345
+% No subscriber for msisdn = '12345'
+
+OsmoHLR# subscriber create imsi 123456789023000
+% Created subscriber 123456789023000
+    ID: 1
+    IMSI: 123456789023000
+    MSISDN: none
+    No auth data
+"
+
+Optionally, this can launch and tear down the application with -r.
+
+For example, if above transcript example is in file test.vty, you can verify
+that OsmoHLR still shows this behavior by:
+
+  osmo_interact_vty.py -p 4258 \\
+    -r 'osmo-hlr -c /etc/osmocom/osmo-hlr.cfg -l /tmp/hlr.db' \\
+    test.vty
+
+Where 4258 is OsmoHLR's VTY port number, see
+https://osmocom.org/projects/cellular-infrastructure/wiki/Port_Numbers
+
+If osmo-hlr is already running, this shortens to just
+
+  osmo_interact_vty.py -p 4258 test.vty
+
+If osmo-hlr has changed its behavior, e.g. some error message changed, the
+transcript can be automatically updated, which overwrites the file, like:
+
+  osmo_interact_vty.py -p 4258 -u test.vty
+
+See also osmo_interact_vty.py, which allows piping VTY commands to stdin.
+
+A Control interface equivalent is osmo_verify_transcript_ctrl.py.
+'''
+    parser = common_parser(__doc__)
     parser_add_vty_args(parser)
     parser_add_verify_args(parser)
     args = parser.parse_args()

@@ -19,9 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Common code for osmo_interact_vty.py and osmo_interact_ctrl.py.
+Common code for VTY and CTRL interface interaction and transcript verification.
 This implements all of application interaction, piping and verification.
-osmo_interact_{vty,ctrl}.py plug VTY and CTRL interface specific bits.
+vty.py and ctrl.py plug VTY and CTRL interface specific bits.
 '''
 
 # Our setup.py currently wants everything to be parsable by both py2 and py3.
@@ -370,8 +370,9 @@ def verify_application(run_app_str, interact, transcript_file, verbose):
 
     return passed
 
-def common_parser():
-    parser = argparse.ArgumentParser()
+def common_parser(doc=None):
+    parser = argparse.ArgumentParser(description=doc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-r', '--run', dest='run_app_str',
                         help='command to run to launch application to test,'
                         ' including command line arguments. If omitted, no'
