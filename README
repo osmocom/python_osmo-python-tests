@@ -7,10 +7,14 @@ depending on your python version.
 
 Use
 There are currently following scripts in this package:
-osmodumpdoc.py - dump documentation (the VTY's "show online-help").
 osmotestconfig.py - test that apps start/write with example configs
-osmotestvty.py - test vty operations (currently, tests very few)
 soap.py - implementation of SOAP <-> Ctrl proxy implemented on top of Twisted
+osmo_interact_vty.py - pipe stdin/stdout to a VTY session
+osmo_interact_ctrl.py - pipe stdin/stdout to a CTRL port
+osmo_verify_transcript_vty.py - VTY testing by VTY session screen dumps
+osmo_verify_transcript_ctrl.py - CTRL testing by CTRL session script files
+osmodumpdoc.py - dump documentation, superseded by osmo_interact_vty.py -X
+osmotestvty.py - test vty operations, superseded by osmo_verify_transcript_vty.py
 
 Each of these scripts imports a project-specific osmoappdesc.py,
 which provides information about the available apps, configs, vty ports, etc.
@@ -24,9 +28,10 @@ After install osmodumpdoc for openbsc's apps can be run by:
 cd <your_source_dir>/openbsc/openbsc && osmodumpdoc.py
 
 Libraries:
-osmopy/obscvty.py - connect to a vty, run commands on it, see the result 
 osmopy/osmoutil.py - code that's shared between the scripts
 osmopy/osmo_ipa.py - generic implementation of IPA and Ctrl protocols in python
 twisted_ipa.py - implementation of IPA and Ctrl protocols on top of Twisted framework
+osmopy/osmo_interact/{vty,ctrl}.py - general interactions with VTY and CTRL ports
+osmopy/obscvty.py - connect to a vty, superseded by osmo_interact/vty
 
 obscvty.py may be of general use. osmoutil.py probably isn't.
