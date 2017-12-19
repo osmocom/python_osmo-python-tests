@@ -13,6 +13,7 @@ osmo_interact_vty.py - pipe stdin/stdout to a VTY session
 osmo_interact_ctrl.py - pipe stdin/stdout to a CTRL port
 osmo_verify_transcript_vty.py - VTY testing by VTY session screen dumps
 osmo_verify_transcript_ctrl.py - CTRL testing by CTRL session script files
+twisted_ipa.py - implementation of IPA and Ctrl protocols on top of Twisted framework
 osmodumpdoc.py - dump documentation, superseded by osmo_interact_vty.py -X
 osmotestvty.py - test vty operations, superseded by osmo_verify_transcript_vty.py
 
@@ -30,7 +31,6 @@ cd <your_source_dir>/openbsc/openbsc && osmodumpdoc.py
 Libraries:
 osmopy/osmoutil.py - code that's shared between the scripts
 osmopy/osmo_ipa.py - generic implementation of IPA and Ctrl protocols in python
-twisted_ipa.py - implementation of IPA and Ctrl protocols on top of Twisted framework
 osmopy/osmo_interact/{vty,ctrl}.py - general interactions with VTY and CTRL ports
 osmopy/obscvty.py - connect to a vty, superseded by osmo_interact/vty
 
