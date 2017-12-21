@@ -40,8 +40,8 @@ def connect(host, port):
 def do_set_get(sck, var, value = None):
         (r, c) = Ctrl().cmd(var, value)
         sck.send(c)
-        answer = Ctrl().rem_header(sck.recv(4096))
-        return (answer,) + Ctrl().verify(answer, r, var, value)
+        ret = sck.recv(4096)
+        return (Ctrl().rem_header(ret),) + Ctrl().verify(ret, r, var, value)
 
 def set_var(sck, var, val):
         (a, _, _) = do_set_get(sck, var, val)

@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.7.0" # bump this on every non-trivial change
+__version__ = "0.7.1" # bump this on every non-trivial change
 
 from osmopy.osmo_ipa import Ctrl, IPA
 from twisted.internet.protocol import ReconnectingClientFactory
@@ -243,7 +243,7 @@ class CTRL(IPACommon):
         OSMO CTRL message dispatcher, lambda default should never happen
         For basic tests only, appropriate handling routines should be replaced: see CtrlServer for example
         """
-        self.dbg('OSMO CTRL received %s::%s' % Ctrl().parse(data.decode('utf-8')))
+        self.dbg('OSMO CTRL received %s::%s' % Ctrl().parse_kv(data))
         (cmd, op_id, v) = data.decode('utf-8').split(' ', 2)
         method = getattr(self, 'ctrl_' + cmd, lambda: "CTRL unknown command")
         method(data, op_id, v)

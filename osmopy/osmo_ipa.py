@@ -28,7 +28,7 @@ class IPA(object):
     """
     Stateless IPA protocol multiplexer: add/remove/parse (extended) header
     """
-    version = "0.0.5"
+    version = "0.0.6"
     TCP_PORT_OML = 3002
     TCP_PORT_RSL = 3003
     # OpenBSC extensions: OSMO, MGCP_OLD
@@ -231,23 +231,36 @@ class Ctrl(IPA):
             return None
         return d
 
-    def parse(self, data, op=None):
+    def parse(self, raw_data):
+        """
+        Parse Ctrl string returning (id, var, value) tuple
+        var could be None in case of ERROR message
+        value could be None in case of GET message
+        both could be None in case of TRAP with non-zero id
+        """
+        data = self.rem_header(raw_data)
+        if data == None:
+            return None, None, None
+        data = data.decode('utf-8')
+        (s, i, v) = data.split(' ', 2)
+        if s == self.CTRL_ERR:
+            return i, None, v
+        if s == self.CTRL_GET:
+            return i, v, None
+        if s == self.CTRL_GET + '_' + self.CTRL_REP:
+            return i, v, None
+        (s, i, var, val) = data.split(' ', 3)
+        if s == self.CTRL_TRAP and i != '0':
+            return i, None, None
+        return i, var, val
+
+    def parse_kv(self, raw_data):
         """
         Parse Ctrl string returning (var, value) pair
         var could be None in case of ERROR message
         value could be None in case of GET message
         """
-        (s, i, v) = data.split(' ', 2)
-        if s == self.CTRL_ERR:
-            return None, v
-        if s == self.CTRL_GET:
-            return v, None
-        (s, i, var, val) = data.split(' ', 3)
-        if s == self.CTRL_TRAP and i != '0':
-            return None, '%s with non-zero id %s' % (s, i)
-        if op is not None and i != op:
-            if s == self.CTRL_GET + '_' + self.CTRL_REP or s == self.CTRL_SET + '_' + self.CTRL_REP:
-                return None, '%s with unexpected id %s' % (s, i)
+        (i, var, val) = self.parse(raw_data)
         return var, val
 
     def trap(self, var, val):
@@ -265,11 +278,19 @@ class Ctrl(IPA):
             return r, self.add_header("%s %s %s %s" % (self.CTRL_SET, r, var, val))
         return r, self.add_header("%s %s %s" % (self.CTRL_GET, r, var))
 
+    def reply(self, op_id, var, val=None):
+        """
+        Make SET/GET command reply: returns assembled message
+        """
+        if val is not None:
+            return self.add_header("%s_%s %s %s %s" % (self.CTRL_SET, self.CTRL_REP, op_id, var, val))
+        return self.add_header("%s_%s %s %s" % (self.CTRL_GET, self.CTRL_REP, op_id, var))
+
     def verify(self, reply, r, var, val=None):
         """
         Verify reply to SET/GET command: returns (b, v) tuple where v is True/False verification result and v is the variable value
         """
-        (k, v) = self.parse(reply)
+        (k, v) = self.parse_kv(reply)
         if k != var or (val is not None and v != val):
             return False, v
         return True, v

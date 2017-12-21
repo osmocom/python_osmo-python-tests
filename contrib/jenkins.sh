@@ -24,7 +24,7 @@ do
     $PY3 $COM_FLAGS $f
 done
 
-cd scripts
-./osmo_ctrl.py --help
+# Run async server which tests scripts/osmo_ctrl.py interaction
+$PY3 tests/test_py3.py
 
 # TODO: add more tests
