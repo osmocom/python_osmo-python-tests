@@ -6,7 +6,7 @@ COM_FLAGS='-m compileall'
 
 # FIXME: remove once python 2 support is deprecated
 PY2=python2
-PY2_LIST="osmopy scripts/osmo_ctrl.py scripts/osmodumpdoc.py scripts/osmotestvty.py scripts/osmotestconfig.py"
+PY2_LIST="osmopy scripts/osmodumpdoc.py scripts/osmotestvty.py scripts/osmotestconfig.py"
 $PY2 ./setup.py install
 $PY2 tests/test_py2.py
 for f in $PY2_LIST
@@ -23,5 +23,8 @@ for f in $PY3_LIST
 do
     $PY3 $COM_FLAGS $f
 done
+
+cd scripts
+./osmo_ctrl.py --help
 
 # TODO: add more tests

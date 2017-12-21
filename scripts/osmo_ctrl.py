@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- mode: python-mode; py-indent-tabs-mode: nil -*-
 """
 /*
- * Copyright (C) 2016 sysmocom s.f.m.c. GmbH
+ * Copyright (C) 2016-2017 sysmocom s.f.m.c. GmbH
  *
  * All Rights Reserved
  *
@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 """
-from __future__ import print_function
+
 from optparse import OptionParser
 from osmopy.osmo_ipa import Ctrl
 import socket
