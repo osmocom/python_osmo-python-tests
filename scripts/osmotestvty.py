@@ -13,7 +13,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 import os
 import time
 import unittest
@@ -36,11 +36,11 @@ class TestVTY(unittest.TestCase):
             osmo_vty_cmd[cfi] = os.path.join(confpath, osmo_vty_cmd[cfi])
 
         try:
-            print "Launch: %s from %s" % (' '.join(osmo_vty_cmd), os.getcwd())
+            print("Launch: %s from %s" % (' '.join(osmo_vty_cmd), os.getcwd()))
             self.proc = osmoutil.popen_devnull(osmo_vty_cmd)
         except OSError:
-            print >> sys.stderr, "Current directory: %s" % os.getcwd()
-            print >> sys.stderr, "Consider setting -b"
+            print("Current directory: %s" % os.getcwd(), file=sys.stderr)
+            print("Consider setting -b", file=sys.stderr)
 
         appstring = osmoappdesc.vty_app[2]
         appport = osmoappdesc.vty_app[0]
@@ -94,9 +94,9 @@ if __name__ == '__main__':
     osmoappdesc = osmoutil.importappconf_or_quit(confpath, "osmoappdesc",
                                                  args.p)
 
-    print "confpath %s, workdir %s" % (confpath, workdir)
+    print("confpath %s, workdir %s" % (confpath, workdir))
     os.chdir(workdir)
-    print "Running tests for specific VTY commands"
+    print("Running tests for specific VTY commands")
     suite = unittest.TestLoader().loadTestsFromTestCase(TestVTY)
     res = unittest.TextTestRunner(verbosity=verbose_level).run(suite)
     sys.exit(len(res.errors) + len(res.failures))

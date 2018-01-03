@@ -4,7 +4,7 @@
 # Fixes may need to be applied to both.
 
 """Start the process and dump the documentation to the doc dir."""
-
+from __future__ import print_function
 import subprocess
 import time
 import os
@@ -21,7 +21,7 @@ def dump_doc(name, port, filename):
     out = open(filename, 'w')
     out.write(xml)
     out.close()
-    print 'generated %r' % filename
+    print('generated %r' % filename)
 
 
 """Dump the config of all the apps.
@@ -40,22 +40,22 @@ def dump_configs(apps, configs, confpath):
 
     for app in apps:
         appname = app[3]
-        print "Starting app for %s" % appname
+        print("Starting app for %s" % appname)
         proc = None
         cmd = [app[1], "-c", os.path.join(confpath, configs[appname][0])]
-        print 'cd', os.path.abspath(os.path.curdir), ';', ' '.join(cmd)
+        print('cd', os.path.abspath(os.path.curdir), ';', ' '.join(cmd))
         try:
             proc = subprocess.Popen(cmd, stdin=None, stdout=None)
         except OSError as e:  # Probably a missing binary
-            print >> sys.stderr, e
-            print >> sys.stderr, "Skipping app %s" % appname
+            print(e, file=sys.stderr)
+            print("Skipping app %s" % appname, file=sys.stderr)
             failures += 1
         else:
             try:
                 dump_doc(app[2], app[0], 'doc/%s_vty_reference.xml' % appname)
                 successes += 1
             except IOError:  # Generally a socket issue
-                print >> sys.stderr, "%s: couldn't connect, skipping" % appname
+                print("%s: couldn't connect, skipping" % appname, file=sys.stderr)
                 failures += 1
         finally:
             osmoutil.end_proc(proc)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     num_fails, num_sucs = dump_configs(
         osmoappdesc.apps, osmoappdesc.app_configs, confpath)
     if num_fails > 0:
-        print >> sys.stderr, "Warning: Skipped %s apps" % num_fails
+        print("Warning: Skipped %s apps" % num_fails, file=sys.stderr)
         if 0 == num_sucs:
-            print >> sys.stderr, "Nothing run, wrong working dir? Set with -w"
+            print("Nothing run, wrong working dir? Set with -w", file=sys.stderr)
     sys.exit(num_fails)

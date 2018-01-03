@@ -13,7 +13,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 import os
 import os.path
 import time
@@ -52,7 +52,7 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
     try:
         cmd = app_desc[1].split(' ') + [ "-c", config]
         if verbose:
-            print "Verifying %s, test %s" % (' '.join(cmd), run_test.__name__)
+            print("Verifying %s, test %s" % (' '.join(cmd), run_test.__name__))
 
         proc = osmoutil.popen_devnull(cmd)
         end = app_desc[2]
@@ -61,10 +61,10 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
         ret = run_test(vty)
 
     except IOError as se:
-        print >> sys.stderr, "Failed to verify %s" % ' '.join(cmd)
-        print >> sys.stderr, "Current directory: %s" % os.getcwd()
-        print >> sys.stderr, "Error was %s" % se
-        print >> sys.stderr, "Config was\n%s" % open(config).read()
+        print("Failed to verify %s" % ' '.join(cmd), file=sys.stderr)
+        print("Current directory: %s" % os.getcwd(), file=sys.stderr)
+        print("Error was %s" % se, file=sys.stderr)
+        print("Config was\n%s" % open(config).read(), file=sys.stderr)
         raise se
 
     finally:
@@ -125,9 +125,8 @@ def verify_doc(vty):
 
             all_errs.append(err_lines)
 
-            print >> sys.stderr, \
-                "Documentation error (missing docs): \n%s\n%s\n" % (
-                cmd_line, '\n'.join(err_lines))
+            print("Documentation error (missing docs): \n%s\n%s\n" % (
+                cmd_line, '\n'.join(err_lines)), file=sys.stderr)
 
     return (len(all_errs), all_errs)
 
@@ -157,7 +156,7 @@ def check_configs_tested(basedir, app_configs, ignore_configs):
             if config in app_configs[app]:
                 found = True
         if not found:
-            print >> sys.stderr, "Warning: %s is not being tested" % config
+            print("Warning: %s is not being tested" % config, file=sys.stderr)
 
 
 def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
@@ -166,7 +165,7 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
     errors = 0
     for app in apps:
         if not app_exists(app):
-            print >> sys.stderr, "Skipping app %s (not found)" % app[1]
+            print("Skipping app %s (not found)" % app[1], file=sys.stderr)
             continue
 
         configs = app_configs[app[3]]
@@ -178,7 +177,7 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
         remove_tmpdir(tmpdir)
 
     if errors:
-        print >> sys.stderr, "ERRORS: %d" % errors
+        print("ERRORS: %d" % errors, file=sys.stderr)
     return errors
 
 

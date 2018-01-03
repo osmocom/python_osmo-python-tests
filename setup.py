@@ -23,7 +23,10 @@ if sys.version_info.major == 2:
 	scripts = ["scripts/osmodumpdoc.py",  "scripts/osmotestconfig.py",
 	           "scripts/osmotestvty.py"]
 elif sys.version_info.major == 3:
-	scripts = ["scripts/osmo_interact_vty.py",
+	scripts = ["scripts/osmodumpdoc.py",
+                   "scripts/osmotestconfig.py",
+	           "scripts/osmotestvty.py",
+                   "scripts/osmo_interact_vty.py",
 		   "scripts/osmo_interact_ctrl.py",
                    "scripts/osmo_ctrl.py",
 		   "scripts/soap.py",
