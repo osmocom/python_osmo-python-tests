@@ -20,16 +20,21 @@ from osmopy import __version__
 import sys
 
 if sys.version_info.major == 2:
-	scripts = ["scripts/osmodumpdoc.py",  "scripts/osmotestconfig.py",
-	           "scripts/osmotestvty.py"]
+    scripts = [
+        "scripts/osmodumpdoc.py",
+        "scripts/osmotestconfig.py",
+        "scripts/osmotestvty.py",
+        ]
 elif sys.version_info.major == 3:
-	scripts = ["scripts/osmo_interact_vty.py",
-		   "scripts/osmo_interact_ctrl.py",
-                   "scripts/osmo_ctrl.py",
-		   "scripts/soap.py",
-		   "scripts/twisted_ipa.py",
-		   "scripts/osmo_verify_transcript_vty.py",
-		   "scripts/osmo_verify_transcript_ctrl.py"]
+    scripts = [
+        "scripts/osmo_interact_vty.py",
+        "scripts/osmo_interact_ctrl.py",
+        "scripts/osmo_ctrl.py",
+        "scripts/soap.py",
+        "scripts/twisted_ipa.py",
+        "scripts/osmo_verify_transcript_vty.py",
+        "scripts/osmo_verify_transcript_ctrl.py",
+        ]
 
 setup(
     name = 'osmopython',
@@ -41,3 +46,5 @@ setup(
     author = "Katerina Barone-Adesi",
     author_email = "kat.obsc@gmail.com"
 )
+
+# vim: expandtab tabstop=4 shiftwidth=4
