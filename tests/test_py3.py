@@ -38,6 +38,8 @@ if __name__ == '__main__':
     test_host = '127.0.0.5'
     test_port = str(random.randint(1025, 60000))
 
+    print('Testing v%s on %s:%s' % (__version__, test_host, test_port))
+
     # Each client connection will create a new protocol instance
     server = loop.run_until_complete(loop.create_server(CtrlProtocol, test_host, test_port))
 
