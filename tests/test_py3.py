@@ -7,7 +7,7 @@ import asyncio, random, sys, os
 # we have to use this ugly hack to workaroundbrokenrelative imports in py3:
 # from ..osmopy.osmo_ipa import Ctrl
 # does not work as expected
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from osmopy.osmo_ipa import Ctrl
 from osmopy import __version__
 
