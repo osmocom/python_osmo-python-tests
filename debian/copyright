@@ -1,0 +1,27 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: osmo-python-tests
+Source: http://git.osmocom.org/python/osmo-python-tests/
+
+Files: osmopy/obscvty.py
+Copyright: Copyright (C) 2012, 2013 Holger Hans Peter Freyther
+License: GPL-2+
+
+Files: osmopy/osmo_ipa.py
+Copyright: Copyright (C) 2016 sysmocom s.f.m.c. GmbH
+License: GPL-3+
+
+Files: osmopy/osmoutil.py
+Copyright: (C) 2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
+License: GPL-3+
+
+Files: osmopy/osmo_interact/*
+Copyright: (C) 2017 by sysmocom s.f.m.c. GmbH <info@sysmocom.de>
+License: GPL-3+
+
+Files: debian/*
+Copyright: 2018 Harald Welte <laforge@gnumonks.org>
+License: GPL-2+
+
+Files: setup.py
+Copyright: (C) 2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
+License: AGPL-3.0+

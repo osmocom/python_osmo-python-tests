@@ -1,0 +1,5 @@
+osmo-python-tests (0.0.9) unstable; urgency=medium
+
+  * Initial package
+
+ -- Harald Welte <laforge@gnumonks.org>  Thu, 31 May 2019 10:33:31 +0100

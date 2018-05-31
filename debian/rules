@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with python2,python3
+
+override_dh_auto_install:
+	python2 setup.py install --install-layout=deb --root=$(CURDIR)/debian/python2-osmopy-libs
+	rm -rf $(CURDIR)/debian/python2-osmopy-libs/usr/bin
+	python2 setup.py install --install-layout=deb --root=$(CURDIR)/debian/python2-osmopy-utils
+	rm -rf $(CURDIR)/debian/python2-osmopy-utils/usr/lib
+	python3 setup.py install --install-layout=deb --root=$(CURDIR)/debian/python3-osmopy-libs
+	rm -rf $(CURDIR)/debian/python3-osmopy-libs/usr/bin
+	python3 setup.py install --install-layout=deb --root=$(CURDIR)/debian/python3-osmopy-utils
+	rm -rf $(CURDIR)/debian/python3-osmopy-utils/usr/lib
