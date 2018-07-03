@@ -31,7 +31,7 @@ Description: Python code (not only) for testing of Osmocom programs
 
 Package: python3-osmopy-utils
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}, python3-osmopy-libs
+Depends: ${python3:Depends}, ${misc:Depends}, python3-osmopy-libs, python3-twisted, python3-treq
 Description: Python code (not only) for testing of Osmocom programs
  .
  This package contains the Python 3 version of osmopy utils.
