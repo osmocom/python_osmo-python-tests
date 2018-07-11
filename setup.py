@@ -30,6 +30,7 @@ elif sys.version_info.major == 3:
         "scripts/osmo_ctrl.py",
         "scripts/osmo_rate_ctr2csv.py",
         "scripts/soap.py",
+        "scripts/ctrl2cgi.py",
         "scripts/osmo_interact_vty.py",
         "scripts/osmo_interact_ctrl.py",
         "scripts/osmo_verify_transcript_vty.py",
