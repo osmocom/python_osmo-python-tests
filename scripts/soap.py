@@ -25,7 +25,7 @@
 __version__ = "0.7.1" # bump this on every non-trivial change
 
 from twisted.internet import defer, reactor
-from twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
+from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
 from osmopy.osmo_ipa import Ctrl
 from treq import post, collect
 from suds.client import Client
