@@ -12,3 +12,8 @@ override_dh_auto_install:
 	rm -rf $(CURDIR)/debian/python3-osmopy-libs/usr/bin
 	python3 setup.py install --install-layout=deb --root=$(CURDIR)/debian/python3-osmopy-utils
 	rm -rf $(CURDIR)/debian/python3-osmopy-utils/usr/lib
+
+override_dh_installinit:
+	# Install service file with different name than package name:
+	# https://unix.stackexchange.com/questions/306234/is-it-possible-to-install-two-services-for-one-package-using-dh-installinit-how
+	dh_installinit --name=ctrl2cgi
