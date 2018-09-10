@@ -110,7 +110,13 @@ class InteractVty(Interact):
             last_line = "%s%s" % (last_line, new_data)
 
             if last_line:
-                lines = last_line.splitlines()
+                # Separate the received response into lines.
+                # But note: the VTY logging currently separates with '\n\r', not '\r\n',
+                # see _vty_output() in libosmocore logging_vty.c.
+                # So we need to jump through hoops to not separate 'abc\n\rdef' as
+                # [ 'abc', '', 'def' ]; but also not to convert '\r\n\r\n' to '\r\n\n' ('\r{\r\n}\n')
+                # Simplest is to just drop all the '\r' and only care about the '\n'.
+                lines = last_line.replace('\r', '').splitlines()
                 received_lines.extend(lines[:-1])
                 last_line = lines[-1]
 
