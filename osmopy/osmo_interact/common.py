@@ -175,6 +175,10 @@ class Interact:
                 step.verify_interact_state(self)
 
                 res = self.command(step.command)
+                # trailing empty lines in the command output cannot be preserved because we allow
+                # arbitrary newlines between commands. Do not even track these.
+                while res and not res[-1]:
+                    res = res[:-1]
 
                 if self.verbose:
                     sys.stderr.flush()
