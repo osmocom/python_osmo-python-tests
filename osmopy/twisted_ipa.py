@@ -84,6 +84,12 @@ class IPACommon(basic.Int16StringReceiver):
         """
         self.dbg('OSMO OAP received %s' % data)
 
+    def osmo_RSPRO(self, data):
+        """
+        OSMO RSPRO (Remote Sim Protocol) extension
+        """
+        self.dbg('OSMO RSPRO received %s' % data)
+
     def osmo_UNKNOWN(self, data):
         """
         OSMO defaul extension handler
