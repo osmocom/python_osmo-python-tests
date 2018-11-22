@@ -141,7 +141,7 @@ class Trap(CTRL):
         params['h'] = gen_hash(params, self.factory.secret_key)
         d = post(self.factory.location, None, params=params)
         d.addCallback(partial(handle_reply, self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
-        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s" % (e, bsc)), bsc) # handle HTTP errors
+        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, bsc, self.factory.location)), bsc) # handle HTTP errors
         # Ensure that we run only limited number of requests in parallel:
         yield self.factory.semaphore.acquire()
         yield d # we end up here only if semaphore is available which means it's ok to fire the request without exceeding the limit
