@@ -41,7 +41,13 @@ def do_set_get(sck, var, value = None):
         _leftovers(sck, socket.MSG_DONTWAIT)
         (r, c) = Ctrl().cmd(var, value)
         sck.send(c)
-        ret = sck.recv(4096)
+        while True:
+                ret = sck.recv(4096)
+                # handle multiple messages, ignore TRAPs
+                ret = Ctrl().skip_traps(ret)
+                if ret != None:
+                    (i, k, v) = Ctrl().parse(ret)
+                    break;
         return (Ctrl().rem_header(ret),) + Ctrl().verify(ret, r, var, value)
 
 def set_var(sck, var, val):
