@@ -116,7 +116,8 @@ class IPA(object):
 
     def split_combined(self, data):
         """
-        Split the data which contains multiple concatenated IPA messages into tuple (first, rest) where rest contains remaining messages, first is the single IPA message
+        Split the data which contains multiple concatenated IPA messages into tuple (first, rest) where 'rest' contains
+        remaining messages and 'first' is the single IPA message. No headers are stripped in 'first' or 'rest'.
         """
         if data == None or len(data) == 0:
             return None, None
