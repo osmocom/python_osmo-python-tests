@@ -103,6 +103,7 @@ class Trap(CTRL):
         """
         Parse CTRL TRAP and dispatch to appropriate handler after normalization
         """
+        self.factory.log.debug('TRAP %s' % v)
         (l, r) = v.split()
         loc = l.split('.')
         t_type = loc[-1]
