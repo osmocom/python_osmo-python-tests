@@ -46,20 +46,6 @@ policy = { 'off' : 0, 'on' : 1, 'grace' : 2, 'unknown' : 3 }
 # keys from OpenBSC openbsc/src/libbsc/bsc_vty.c
 fix = { 'invalid' : 0, 'fix2d' : 1, 'fix3d' : 1 } # CGI server treats it as boolean but expects int
 
-def patch_cgi_resp(r):
-    str = r.decode('utf-8')
-    lines = str.splitlines()
-    i = 0
-    #search for empty line, marks start of body
-    for l in lines:
-        i += 1
-        if l == '':
-            break
-    print('i="%r"' % i)
-    json_lines = lines[i:]
-    json_str = '\n'.join(json_lines)
-    return json.loads(json_str)
-
 @defer.inlineCallbacks
 def handle_reply(f, log, resp):
     """
