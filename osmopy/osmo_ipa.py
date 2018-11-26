@@ -106,8 +106,9 @@ class IPA(object):
         Strip IPA protocol header correctly removing extension if present
         Returns data length, IPA protocol, extension (or None if not defined for a give protocol) and the data without header
         """
-        if not len(data):
+        if data == None or len(data) == 0:
             return None, None, None, None
+
         (dlen, proto) = struct.unpack('>HB', data[:3])
         if self.PROTO['OSMO'] == proto or self.PROTO['CCM'] == proto: # there's extension which we have to unpack
             return struct.unpack('>HBB', data[:4]) + (data[4:], ) # length, protocol, extension, data
@@ -117,6 +118,9 @@ class IPA(object):
         """
         Split the data which contains multiple concatenated IPA messages into tuple (first, rest) where rest contains remaining messages, first is the single IPA message
         """
+        if data == None or len(data) == 0:
+            return None, None
+
         (length, _, _, _) = self.del_header(data)
         return data[:(length + 3)], data[(length + 3):]
 
