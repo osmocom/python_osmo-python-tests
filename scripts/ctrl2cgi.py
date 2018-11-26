@@ -29,6 +29,7 @@ from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_vers
 from osmopy.osmo_ipa import Ctrl
 from treq import post, collect
 from functools import partial
+from osmopy.trap_helper import Trap, reloader, debug_init
 from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
 import argparse, datetime, signal, sys, os, logging, logging.handlers
 import hashlib
@@ -38,13 +39,6 @@ import configparser
 # we don't support older versions of TwistedIPA module
 assert V(twisted_ipa_version) > V('0.4')
 
-# keys from OpenBSC openbsc/src/libbsc/bsc_rf_ctrl.c, values CGI-specific
-oper = { 'inoperational' : 0, 'operational' : 1 }
-admin = { 'locked' : 0, 'unlocked' : 1 }
-policy = { 'off' : 0, 'on' : 1, 'grace' : 2, 'unknown' : 3 }
-
-# keys from OpenBSC openbsc/src/libbsc/bsc_vty.c
-fix = { 'invalid' : 0, 'fix2d' : 1, 'fix3d' : 1 } # CGI server treats it as boolean but expects int
 
 @defer.inlineCallbacks
 def handle_reply(f, log, resp):
@@ -81,65 +75,6 @@ def gen_hash(params, skey):
     #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res
 
-class Trap(CTRL):
-    """
-    TRAP handler (agnostic to factory's client object)
-    """
-    def ctrl_TRAP(self, data, op_id, v):
-        """
-        Parse CTRL TRAP and dispatch to appropriate handler after normalization
-        """
-        self.factory.log.debug('TRAP %s' % v)
-        (l, r) = v.split()
-        loc = l.split('.')
-        t_type = loc[-1]
-        p = partial(lambda a, i: a[i] if len(a) > i else None, loc) # parse helper
-        method = getattr(self, 'handle_' + t_type.replace('-', ''), lambda *_: "Unhandled %s trap" % t_type)
-        method(p(1), p(3), p(5), p(7), r) # we expect net.0.bsc.666.bts.2.trx.1 format for trap prefix
-
-    def ctrl_SET_REPLY(self, data, _, v):
-        """
-        Debug log for replies to our commands
-        """
-        self.factory.log.debug('SET REPLY %s' % v)
-
-    def ctrl_ERROR(self, data, op_id, v):
-        """
-        We want to know if smth went wrong
-        """
-        self.factory.log.debug('CTRL ERROR [%s] %s' % (op_id, v))
-
-    def connectionMade(self):
-        """
-        Logging wrapper, calling super() is necessary not to break reconnection logic
-        """
-        self.factory.log.info("Connected to CTRL@%s:%d" % (self.factory.host, self.factory.port))
-        super(CTRL, self).connectionMade()
-
-    @defer.inlineCallbacks
-    def handle_locationstate(self, net, bsc, bts, trx, data):
-        """
-        Handle location-state TRAP: parse trap content, build CGI Request and use treq's routines to post it while setting up async handlers
-        """
-        (ts, fx, lat, lon, height, opr, adm, pol, mcc, mnc) = data.split(',')
-        tstamp = datetime.datetime.fromtimestamp(float(ts)).isoformat()
-        self.factory.log.debug('location-state@%s.%s.%s.%s (%s) [%s/%s] => %s' % (net, bsc, bts, trx, tstamp, mcc, mnc, data))
-        params = {'bsc_id': bsc, 'lon': lon, 'lat': lat, 'position_validity': fix.get(fx, 0), 'time_stamp': tstamp, 'oper_status': oper.get(opr, 2), 'admin_status': admin.get(adm, 2), 'policy_status': policy.get(pol, 3) }
-        params['h'] = gen_hash(params, self.factory.secret_key)
-        d = post(self.factory.location, None, params=params)
-        d.addCallback(partial(handle_reply, self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
-        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, bsc, self.factory.location)), bsc) # handle HTTP errors
-        # Ensure that we run only limited number of requests in parallel:
-        yield self.factory.semaphore.acquire()
-        yield d # we end up here only if semaphore is available which means it's ok to fire the request without exceeding the limit
-        self.factory.semaphore.release()
-
-    def handle_notificationrejectionv1(self, net, bsc, bts, trx, data):
-        """
-        Handle notification-rejection-v1 TRAP: just an example to show how more message types can be handled
-        """
-        self.factory.log.debug('notification-rejection-v1@bsc-id %s => %s' % (bsc, data))
-
 
 class TrapFactory(IPAFactory):
     """
@@ -165,21 +100,12 @@ class TrapFactory(IPAFactory):
         self.log.setLevel(level)
         self.log.debug("Using IPA %s, CGI server: %s" % (Ctrl.version, self.location))
 
-
-def reloader(path, script, log, dbg1, dbg2, signum, _):
-    """
-    Signal handler: we have to use execl() because twisted's reactor is not restartable due to some bug in twisted implementation
-    """
-    log.info("Received Signal %d - restarting..." % signum)
-    if signum == signal.SIGUSR1 and dbg1 not in sys.argv and dbg2 not in sys.argv:
-        sys.argv.append(dbg1) # enforce debug
-    if signum == signal.SIGUSR2 and (dbg1 in sys.argv or dbg2 in sys.argv): # disable debug
-        if dbg1 in sys.argv:
-            sys.argv.remove(dbg1)
-        if dbg2 in sys.argv:
-            sys.argv.remove(dbg2)
-    os.execl(path, script, *sys.argv[1:])
-
+    def prepare_params(bsc, lon, lat, fix, tstamp, oper, admin, policy):
+        params = {'bsc_id': bsc, 'lon': lon, 'lat': lat, 'position_validity': fix, 'time_stamp': tstamp, 'oper_status': oper, 'admin_status': admin, 'policy_status': policy }
+        params['h'] = gen_hash(params, self.factory.secret_key)
+        d = post(self.factory.location, None, params=params)
+        d.addCallback(partial(handle_reply, self.transport.write, self.factory.log))
+        return d
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Proxy between given GCI service and Osmocom CTRL protocol.')
@@ -187,27 +113,14 @@ if __name__ == '__main__':
     p.add_argument('-a', '--addr-ctrl', default='localhost', help="Adress to use for CTRL interface, defaults to localhost")
     p.add_argument('-p', '--port-ctrl', type=int, default=4250, help="Port to use for CTRL interface, defaults to 4250")
     p.add_argument('-n', '--num-max-conn', type=int, default=5, help="Max number of concurrent HTTP requests to CGI server")
-    p.add_argument('-d', '--debug', action='store_true', help="Enable debug log")
+    p.add_argument('-d', '--debug', action='store_true', help="Enable debug log") # keep in sync with debug_init call below
     p.add_argument('-o', '--output', action='store_true', help="Log to STDOUT in addition to SYSLOG")
     p.add_argument('-l', '--location', help="Location URL of the CGI server")
     p.add_argument('-s', '--secret-key', help="Secret key used to generate verification token")
     p.add_argument('-c', '--config-file', help="Path Config file. Cmd line args override values in config file")
     args = p.parse_args()
 
-    log = logging.getLogger('CTRL2CGI')
-    if args.debug:
-        log.setLevel(logging.DEBUG)
-    else:
-        log.setLevel(logging.INFO)
-    log.addHandler(logging.handlers.SysLogHandler('/dev/log'))
-    if args.output:
-        log.addHandler(logging.StreamHandler(sys.stdout))
-
-    reboot = partial(reloader, os.path.abspath(__file__), os.path.basename(__file__), log, '-d', '--debug') # keep in sync with add_argument() call above
-    signal.signal(signal.SIGHUP, reboot)
-    signal.signal(signal.SIGQUIT, reboot)
-    signal.signal(signal.SIGUSR1, reboot) # restart and enabled debug output
-    signal.signal(signal.SIGUSR2, reboot) # restart and disable debug output
+    log = debug_init('CTRL2CGI', args.debug, args.output)
 
     location_cfgfile = None
     secret_key_cfgfile = None
