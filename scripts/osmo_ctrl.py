@@ -38,6 +38,7 @@ def connect(host, port):
         return sck
 
 def do_set_get(sck, var, value = None):
+        _leftovers(sck, socket.MSG_DONTWAIT)
         (r, c) = Ctrl().cmd(var, value)
         sck.send(c)
         ret = sck.recv(4096)
@@ -46,10 +47,6 @@ def do_set_get(sck, var, value = None):
 def set_var(sck, var, val):
         (a, _, _) = do_set_get(sck, var, val)
         return a
-
-def get_var(sck, var):
-        (_, _, v) = do_set_get(sck, var)
-        return v
 
 def _leftovers(sck, fl):
         """
@@ -102,13 +99,11 @@ if __name__ == '__main__':
         if options.cmd_set:
                 if len(args) < 2:
                         parser.error("Set requires var and value arguments")
-                _leftovers(sock, socket.MSG_DONTWAIT)
                 print("Got message:", set_var(sock, args[0], ' '.join(args[1:])))
 
         if options.cmd_get:
                 if len(args) != 1:
                         parser.error("Get requires the var argument")
-                _leftovers(sock, socket.MSG_DONTWAIT)
                 (a, _, _) = do_set_get(sock, args[0])
                 print("Got message:", a)
 
