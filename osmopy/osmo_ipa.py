@@ -43,6 +43,7 @@ class IPA(object):
     CTRL_REP = 'REPLY'
     CTRL_ERR = 'ERR'
     CTRL_TRAP = 'TRAP'
+    CTRL_TRAP_ID = 0
 
     def _l(self, d, p):
         """
@@ -250,7 +251,7 @@ class Ctrl(IPA):
         if s == self.CTRL_GET + '_' + self.CTRL_REP:
             return i, v, None
         (s, i, var, val) = data.split(' ', 3)
-        if s == self.CTRL_TRAP and i != '0':
+        if s == self.CTRL_TRAP and int(i) != self.CTRL_TRAP_ID:
             return i, None, None
         return i, var, val
 
@@ -267,7 +268,7 @@ class Ctrl(IPA):
         """
         Make TRAP message with given (vak, val) pair
         """
-        return self.add_header("%s 0 %s %s" % (self.CTRL_TRAP, var, val))
+        return self.add_header("%s %d %s %s" % (self.CTRL_TRAP, self.CTRL_TRAP_ID, var, val))
 
     def cmd(self, var, val=None):
         """
