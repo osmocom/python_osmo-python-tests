@@ -2,7 +2,7 @@
 # -*- mode: python-mode; py-indent-tabs-mode: nil -*-
 """
 /*
- * Copyright (C) 2016 sysmocom s.f.m.c. GmbH
+ * Copyright (C) 2016-2018 sysmocom s.f.m.c. GmbH
  *
  * All Rights Reserved
  *
@@ -28,7 +28,7 @@ class IPA(object):
     """
     Stateless IPA protocol multiplexer: add/remove/parse (extended) header
     """
-    version = "0.0.6"
+    version = "0.0.7"
     TCP_PORT_OML = 3002
     TCP_PORT_RSL = 3003
     # OpenBSC extensions: OSMO, MGCP_OLD
@@ -113,6 +113,21 @@ class IPA(object):
         if self.PROTO['OSMO'] == proto or self.PROTO['CCM'] == proto: # there's extension which we have to unpack
             return struct.unpack('>HBB', data[:4]) + (data[4:], ) # length, protocol, extension, data
         return dlen, proto, None, data[3:] # length, protocol, _, data
+
+    def skip_traps(self, data):
+        """
+        Take one or more ctrl messages and data and return first non-TRAP message or None
+        """
+        if data == None or len(data) == 0:
+            return None
+
+        (head, tail) = self.split_combined(data)
+        (length, _, _, payload) = self.del_header(head)
+        # skip over broken messages as well as TRAPs
+        if length == 0 or payload[:(length + 3)].decode('utf-8').startswith(self.CTRL_TRAP):
+                return self.skip_traps(tail)
+
+        return head
 
     def split_combined(self, data):
         """
