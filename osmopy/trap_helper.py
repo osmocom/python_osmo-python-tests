@@ -22,7 +22,7 @@
  */
 """
 
-import sys, os, signal, logging, logging.handlers
+import sys, os, datetime, signal, logging, logging.handlers
 from functools import partial
 from osmopy.twisted_ipa import CTRL
 from twisted.internet import defer
@@ -34,6 +34,42 @@ policy = { 'off' : 0, 'on' : 1, 'grace' : 2, 'unknown' : 3 }
 
 # keys from OpenBSC openbsc/src/libbsc/bsc_vty.c
 fix = { 'invalid' : 0, 'fix2d' : 1, 'fix3d' : 1 } # SOAP server treats it as boolean but expects int
+
+def split_type(v):
+    """
+    Split TRAP type into list
+    """
+    (l, _) = v.split()
+    return l.split('.')
+
+def get_r(v):
+    """
+    Split TRAP record
+    """
+    (_, r) = v.split()
+    return r
+
+def get_type(v):
+    """
+    Get TRAP type
+    """
+    loc = split_type(v)
+    return loc[-1]
+
+def make_params(bsc, data):
+    """
+    Make parameters for request
+    """
+    (ts, fx, lat, lon, _, opr, adm, pol, _, _) = data.split(',')
+    tstamp = datetime.datetime.fromtimestamp(float(ts)).isoformat()
+    return {'bsc_id': bsc, 'lon': lon, 'lat': lat, 'position_validity': fix.get(fx, 0), 'time_stamp': tstamp, 'oper_status': oper.get(opr, 2), 'admin_status': admin.get(adm, 2), 'policy_status': policy.get(pol, 3) }
+
+def p_h(v):
+    """
+    Parse helper for method dispatch: expected format is net.0.bsc.666.bts.2.trx.1
+    """
+    loc = split_type(v)
+    return partial(lambda a, i: a[i] if len(a) > i else None, loc)
 
 class Trap(CTRL):
     """
@@ -109,6 +145,9 @@ def reloader(path, script, log, dbg1, dbg2, signum, _):
     os.execl(path, script, *sys.argv[1:])
 
 def debug_init(name, is_debug, output):
+    """
+    Initialize signal handlers and logging
+    """
     log = logging.getLogger(name)
     if is_debug:
         log.setLevel(logging.DEBUG)
