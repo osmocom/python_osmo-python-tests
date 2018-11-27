@@ -43,11 +43,12 @@ class Trap(CTRL):
         """
         Parse CTRL TRAP and dispatch to appropriate handler after normalization
         """
+        self.factory.log.debug('TRAP %s' % v)
         (l, r) = v.split()
         loc = l.split('.')
         t_type = loc[-1]
         p = partial(lambda a, i: a[i] if len(a) > i else None, loc) # parse helper
-        method = getattr(self, 'handle_' + t_type.replace('-', ''), lambda: "Unhandled %s trap" % t_type)
+        method = getattr(self, 'handle_' + t_type.replace('-', ''), lambda *_: "Unhandled %s trap" % t_type)
         method(p(1), p(3), p(5), p(7), r) # we expect net.0.bsc.666.bts.2.trx.1 format for trap prefix
 
     def ctrl_SET_REPLY(self, data, _, v):
