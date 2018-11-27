@@ -22,14 +22,14 @@
  */
 """
 
-__version__ = "0.0.1" # bump this on every non-trivial change
+__version__ = "0.0.2" # bump this on every non-trivial change
 
 from twisted.internet import defer, reactor
 from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
 from osmopy.osmo_ipa import Ctrl
 from treq import post, collect
 from functools import partial
-from osmopy.trap_helper import Trap, reloader, debug_init
+from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params
 from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
 import argparse, datetime, signal, sys, os, logging, logging.handlers
 import hashlib
@@ -75,6 +75,61 @@ def gen_hash(params, skey):
     #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res
 
+class Trap(CTRL):
+    """
+    TRAP handler (agnostic to factory's client object)
+    """
+    def ctrl_TRAP(self, data, op_id, v):
+        """
+        Parse CTRL TRAP and dispatch to appropriate handler after normalization
+        """
+        self.factory.log.debug('TRAP %s' % v)
+        t_type = get_type(v)
+        p = p_h(v)
+        method = getattr(self, 'handle_' + t_type.replace('-', ''), lambda *_: "Unhandled %s trap" % t_type)
+        method(p(1), p(3), p(5), p(7), get_r(v))
+
+    def ctrl_SET_REPLY(self, data, _, v):
+        """
+        Debug log for replies to our commands
+        """
+        self.factory.log.debug('SET REPLY %s' % v)
+
+    def ctrl_ERROR(self, data, op_id, v):
+        """
+        We want to know if smth went wrong
+        """
+        self.factory.log.debug('CTRL ERROR [%s] %s' % (op_id, v))
+
+    def connectionMade(self):
+        """
+        Logging wrapper, calling super() is necessary not to break reconnection logic
+        """
+        self.factory.log.info("Connected to CTRL@%s:%d" % (self.factory.host, self.factory.port))
+        super(CTRL, self).connectionMade()
+
+    @defer.inlineCallbacks
+    def handle_locationstate(self, net, bsc, bts, trx, data):
+        """
+        Handle location-state TRAP: parse trap content, build CGI Request and use treq's routines to post it while setting up async handlers
+        """
+        params = make_params(bsc, data)
+        self.factory.log.debug('location-state@%s.%s.%s.%s (%s) => %s' % (net, bsc, bts, trx, params['time_stamp'], data))
+        params['h'] = gen_hash(params, self.factory.secret_key)
+        d = post(self.factory.location, None, params=params)
+        d.addCallback(partial(handle_reply, self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
+        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, bsc, self.factory.location)), bsc) # handle HTTP errors
+        # Ensure that we run only limited number of requests in parallel:
+        yield self.factory.semaphore.acquire()
+        yield d # we end up here only if semaphore is available which means it's ok to fire the request without exceeding the limit
+        self.factory.semaphore.release()
+
+    def handle_notificationrejectionv1(self, net, bsc, bts, trx, data):
+        """
+        Handle notification-rejection-v1 TRAP: just an example to show how more message types can be handled
+        """
+        self.factory.log.debug('notification-rejection-v1@bsc-id %s => %s' % (bsc, data))
+
 
 class TrapFactory(IPAFactory):
     """
@@ -100,12 +155,6 @@ class TrapFactory(IPAFactory):
         self.log.setLevel(level)
         self.log.debug("Using IPA %s, CGI server: %s" % (Ctrl.version, self.location))
 
-    def prepare_params(bsc, lon, lat, fix, tstamp, oper, admin, policy):
-        params = {'bsc_id': bsc, 'lon': lon, 'lat': lat, 'position_validity': fix, 'time_stamp': tstamp, 'oper_status': oper, 'admin_status': admin, 'policy_status': policy }
-        params['h'] = gen_hash(params, self.factory.secret_key)
-        d = post(self.factory.location, None, params=params)
-        d.addCallback(partial(handle_reply, self.transport.write, self.factory.log))
-        return d
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Proxy between given GCI service and Osmocom CTRL protocol.')
