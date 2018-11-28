@@ -22,14 +22,14 @@
  */
 """
 
-__version__ = "0.0.3" # bump this on every non-trivial change
+__version__ = "0.0.4" # bump this on every non-trivial change
 
 from twisted.internet import defer, reactor
 from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
 from osmopy.osmo_ipa import Ctrl
 from treq import post, collect
 from functools import partial
-from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params
+from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params, comm_proc
 from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
 import argparse, datetime, signal, sys, os, logging, logging.handlers
 import hashlib
@@ -45,11 +45,7 @@ def handle_reply(f, log, resp):
     Reply handler: process raw CGI server response, function f to run for each command
     """
     decoded = json.loads(resp.decode('utf-8'))
-    bsc_id = decoded.get('commands')[0].split()[0].split('.')[3] # we expect 1st command to have net.0.bsc.666.bts.2.trx.1 location prefix format
-    log.debug("BSC %s commands: %r" % (bsc_id, decoded.get('commands')))
-    for t in decoded.get('commands'): # Process commands format
-        (_, m) = Ctrl().cmd(*t.split())
-        f(m)
+    comm_proc(decoded.get('commands'), f, log)
 
 def gen_hash(params, skey):
     input = ''

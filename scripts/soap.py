@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.7.1" # bump this on every non-trivial change
+__version__ = "0.7.2" # bump this on every non-trivial change
 
 from twisted.internet import defer, reactor
 from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
@@ -30,7 +30,7 @@ from osmopy.osmo_ipa import Ctrl
 from treq import post, collect
 from suds.client import Client
 from functools import partial
-from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params
+from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params, comm_proc
 from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
 import argparse, datetime, signal, sys, os, logging, logging.handlers
 
@@ -40,15 +40,11 @@ assert V(twisted_ipa_version) > V('0.4')
 
 def handle_reply(p, f, log, r):
     """
-    Reply handler: takes function p to process raw SOAP server reply r, function f to run for each command and verbosity flag v
+    Reply handler: takes function p to process raw SOAP server reply r, function f to run for each command
     """
     repl = p(r) # result is expected to have both commands[] array and error string (could be None)
-    bsc_id = repl.commands[0].split()[0].split('.')[3] # we expect 1st command to have net.0.bsc.666.bts.2.trx.1 location prefix format
+    bsc_id = comm_proc(repl.commands, f, log)
     log.info("Received SOAP response for BSC %s with %d commands, error status: %s" % (bsc_id, len(repl.commands), repl.error))
-    log.debug("BSC %s commands: %s" % (bsc_id, repl.commands))
-    for t in repl.commands: # Process OpenBscCommands format from .wsdl
-        (_, m) = Ctrl().cmd(*t.split())
-        f(m)
 
 
 class Trap(CTRL):
