@@ -25,8 +25,6 @@
 import sys, os, datetime, signal, logging, logging.handlers
 from functools import partial
 from osmopy.osmo_ipa import Ctrl
-from osmopy.twisted_ipa import CTRL
-from twisted.internet import defer
 
 # keys from OpenBSC openbsc/src/libbsc/bsc_rf_ctrl.c, values SOAP-specific
 oper = { 'inoperational' : 0, 'operational' : 1 }

@@ -24,17 +24,17 @@
 
 __version__ = "0.0.4" # bump this on every non-trivial change
 
-from twisted.internet import defer, reactor
-from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
-from osmopy.osmo_ipa import Ctrl
-from treq import post, collect
-from functools import partial
-from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params, comm_proc
-from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
-import argparse, datetime, signal, sys, os, logging, logging.handlers
+import argparse, os, logging, logging.handlers
 import hashlib
 import json
 import configparser
+from functools import partial
+from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
+from twisted.internet import defer, reactor
+from treq import post, collect
+from osmopy.trap_helper import debug_init, get_type, get_r, p_h, make_params, comm_proc
+from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
+from osmopy.osmo_ipa import Ctrl
 
 # we don't support older versions of TwistedIPA module
 assert V(twisted_ipa_version) > V('0.4')
@@ -48,14 +48,14 @@ def handle_reply(f, log, resp):
     comm_proc(decoded.get('commands'), f, log)
 
 def gen_hash(params, skey):
-    input = ''
-    for key in ['time_stamp','position_validity','admin_status','policy_status']:
-        input += str(params.get(key))
-    input += skey
-    for key in ['bsc_id','lat','lon','position_validity']:
-        input += str(params.get(key))
+    inp = ''
+    for key in ['time_stamp', 'position_validity', 'admin_status', 'policy_status']:
+        inp += str(params.get(key))
+    inp += skey
+    for key in ['bsc_id', 'lat', 'lon', 'position_validity']:
+        inp += str(params.get(key))
     m = hashlib.md5()
-    m.update(input.encode('utf-8'))
+    m.update(inp.encode('utf-8'))
     res = m.hexdigest()
     #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res

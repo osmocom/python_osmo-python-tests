@@ -24,15 +24,15 @@
 
 __version__ = "0.7.2" # bump this on every non-trivial change
 
+import argparse, os, logging
+from functools import partial
+from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
 from twisted.internet import defer, reactor
+from suds.client import Client
+from treq import post, collect
+from osmopy.trap_helper import debug_init, get_type, get_r, p_h, make_params, comm_proc
 from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
 from osmopy.osmo_ipa import Ctrl
-from treq import post, collect
-from suds.client import Client
-from functools import partial
-from osmopy.trap_helper import reloader, debug_init, get_type, get_r, p_h, make_params, comm_proc
-from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
-import argparse, datetime, signal, sys, os, logging, logging.handlers
 
 # we don't support older versions of TwistedIPA module
 assert V(twisted_ipa_version) > V('0.4')
