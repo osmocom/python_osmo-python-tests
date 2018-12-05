@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.0.4" # bump this on every non-trivial change
+__version__ = "0.0.5" # bump this on every non-trivial change
 
 import argparse, os, logging, logging.handlers
 import hashlib
@@ -90,7 +90,7 @@ class Trap(CTRL):
         """
         Logging wrapper, calling super() is necessary not to break reconnection logic
         """
-        self.factory.log.info("Connected to CTRL@%s:%d" % (self.factory.host, self.factory.port))
+        self.factory.log.info("Connected to CTRL@%s:%d" % (self.factory.addr_ctrl, self.factory.port_ctrl))
         super(CTRL, self).connectionMade()
 
     @defer.inlineCallbacks
@@ -120,61 +120,37 @@ class TrapFactory(IPAFactory):
     """
     Store CGI information so TRAP handler can use it for requests
     """
-    location = None
-    log = None
-    semaphore = None
-    client = None
-    host = None
-    port = None
-    secret_key = None
-    def __init__(self, host, port, proto, semaphore, log, location, secret_key):
-        self.host = host # for logging only,
-        self.port = port # seems to be no way to get it from ReconnectingClientFactory
+    def __init__(self, proto, log):
         self.log = log
-        self.semaphore = semaphore
-        self.location = location
-        self.secret_key = secret_key
         level = self.log.getEffectiveLevel()
         self.log.setLevel(logging.WARNING) # we do not need excessive debug from lower levels
         super(TrapFactory, self).__init__(proto, self.log)
         self.log.setLevel(level)
-        self.log.debug("Using IPA %s, CGI server: %s" % (Ctrl.version, self.location))
+        self.log.debug("Using Osmocom IPA library v%s" % Ctrl.version)
 
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Proxy between given GCI service and Osmocom CTRL protocol.')
     p.add_argument('-v', '--version', action='version', version=("%(prog)s v" + __version__))
-    p.add_argument('-a', '--addr-ctrl', default='localhost', help="Adress to use for CTRL interface, defaults to localhost")
-    p.add_argument('-p', '--port-ctrl', type=int, default=4250, help="Port to use for CTRL interface, defaults to 4250")
-    p.add_argument('-n', '--num-max-conn', type=int, default=5, help="Max number of concurrent HTTP requests to CGI server")
     p.add_argument('-d', '--debug', action='store_true', help="Enable debug log") # keep in sync with debug_init call below
-    p.add_argument('-l', '--location', help="Location URL of the CGI server")
-    p.add_argument('-s', '--secret-key', help="Secret key used to generate verification token")
-    p.add_argument('-c', '--config-file', help="Path Config file. Cmd line args override values in config file")
-    args = p.parse_args()
+    p.add_argument('-c', '--config-file', required=True, help="Path to mandatory config file (in INI format).")
+    args = p.parse_args(namespace=TrapFactory)
 
     log = debug_init('CTRL2CGI', args.debug)
 
-    location_cfgfile = None
-    secret_key_cfgfile = None
-    port_ctrl_cfgfile = None
-    addr_ctrl_cfgfile = None
-    num_max_conn_cfgfile = None
-    if args.config_file:
-        config = configparser.ConfigParser()
-        config.read(args.config_file)
-        if 'main' in config:
-            location_cfgfile = config['main'].get('location', None)
-            secret_key_cfgfile = config['main'].get('secret_key', None)
-            addr_ctrl_cfgfile = config['main'].get('addr_ctrl', None)
-            port_ctrl_cfgfile = config['main'].get('port_ctrl', None)
-            num_max_conn_cfgfile = config['main'].get('num_max_conn', None)
-    location = args.location if args.location is not None else location_cfgfile
-    secret_key = args.secret_key  if args.secret_key is not None else secret_key_cfgfile
-    addr_ctrl = args.addr_ctrl if args.addr_ctrl is not None else addr_ctrl_cfgfile
-    port_ctrl = args.port_ctrl if args.port_ctrl is not None else port_ctrl_cfgfile
-    num_max_conn = args.num_max_conn if args.num_max_conn is not None else num_max_conn_cfgfile
+    T = TrapFactory(Trap, log)
 
-    log.info("CGI proxy %s starting with PID %d ..." % (__version__, os.getpid()))
-    reactor.connectTCP(addr_ctrl, port_ctrl, TrapFactory(addr_ctrl, port_ctrl, Trap, defer.DeferredSemaphore(num_max_conn), log, location, secret_key))
+    config = configparser.ConfigParser(interpolation=None)
+    config.read(args.config_file)
+
+    T.addr_ctrl = config['main'].get('addr_ctrl', 'localhost')
+    T.port_ctrl = config['main'].getint('port_ctrl', 4250)
+    T.semaphore = defer.DeferredSemaphore(config['main'].getint('num_max_conn', 5))
+    T.location = config['main'].get('location')
+    T.secret_key = config['main'].get('secret_key')
+
+    log.info("CGI proxy v%s starting with PID %d:" % (__version__, os.getpid()))
+    log.info("destination %s (concurrency %d)" % (T.location, T.semaphore.limit))
+    log.info("connecting to %s:%d..." % (T.addr_ctrl, T.port_ctrl))
+    reactor.connectTCP(T.addr_ctrl, T.port_ctrl, T)
     reactor.run()
