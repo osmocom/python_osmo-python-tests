@@ -104,7 +104,7 @@ class Trap(CTRL):
         Handle location-state TRAP: parse trap content, build CGI Request and use treq's routines to post it while setting up async handlers
         """
         params = make_params(bsc, data)
-        self.factory.log.debug('location-state@%s.%s.%s.%s (%s) => %s' % (net, bsc, bts, trx, params['time_stamp'], data))
+        self.factory.log.info('location-state@%s.%s.%s.%s (%s) => %s' % (net, bsc, bts, trx, params['time_stamp'], data))
         params['h'] = gen_hash(params, self.factory.secret_key)
         # Ensure that we run only limited number of requests in parallel:
         self.factory.semaphore.run(make_async_req, self.factory.location, params, self.transport.write, self.factory.log)

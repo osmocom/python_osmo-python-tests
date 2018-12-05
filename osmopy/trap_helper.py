@@ -60,7 +60,7 @@ def comm_proc(comm, bid, f, log):
     Command processor: takes function f to run for each command
     """
     bsc_id = comm[0].split()[0].split('.')[3] # we expect 1st command to have net.0.bsc.666.bts.2.trx.1 location prefix format
-    log.debug("BSC %s commands: %r" % (bid, comm))
+    log.info("BSC %s commands: %r" % (bid, comm))
     for t in comm:
         (_, m) = Ctrl().cmd(*t.split())
         f(m)
