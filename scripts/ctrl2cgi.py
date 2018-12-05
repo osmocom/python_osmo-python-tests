@@ -22,9 +22,9 @@
  */
 """
 
-__version__ = "0.0.6" # bump this on every non-trivial change
+__version__ = "0.0.7" # bump this on every non-trivial change
 
-import argparse, os, logging, logging.handlers
+import argparse, os, logging, logging.handlers, datetime
 import hashlib
 import json
 import configparser
@@ -40,11 +40,12 @@ from osmopy.osmo_ipa import Ctrl
 assert V(twisted_ipa_version) > V('0.4')
 
 
-def handle_reply(bid, f, log, resp):
+def handle_reply(ts, bid, f, log, resp):
     """
     Reply handler: process raw CGI server response, function f to run for each command
     """
     decoded = json.loads(resp.decode('utf-8'))
+    log.debug('request for BSC %s took %d seconds' % (bid, (datetime.datetime.now() - ts).total_seconds()))
     comm_proc(decoded.get('commands'), bid, f, log)
 
 def gen_hash(params, skey):
@@ -60,9 +61,9 @@ def gen_hash(params, skey):
     #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res
 
-def make_async_req(dst, par, f_write, f_log):
+def make_async_req(ts, dst, par, f_write, f_log):
     d = post(dst, par)
-    d.addCallback(collect, partial(handle_reply, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
+    d.addCallback(collect, partial(handle_reply, ts, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
     d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, par['bsc_id'], dst))) # handle HTTP errors
     return d
 
@@ -106,8 +107,10 @@ class Trap(CTRL):
         params = make_params(bsc, data)
         self.factory.log.info('location-state@%s.%s.%s.%s (%s) => %s' % (net, bsc, bts, trx, params['time_stamp'], data))
         params['h'] = gen_hash(params, self.factory.secret_key)
+        t = datetime.datetime.now()
+        self.factory.log.debug('Preparing request for BSC %s @ %s...' % (params['bsc_id'], t))
         # Ensure that we run only limited number of requests in parallel:
-        self.factory.semaphore.run(make_async_req, self.factory.location, params, self.transport.write, self.factory.log)
+        self.factory.semaphore.run(make_async_req, t, self.factory.location, params, self.transport.write, self.factory.log)
 
     def handle_notificationrejectionv1(self, net, bsc, bts, trx, data):
         """
