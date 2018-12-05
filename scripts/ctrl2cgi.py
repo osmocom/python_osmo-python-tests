@@ -64,7 +64,7 @@ def gen_hash(params, skey):
 def make_async_req(ts, dst, par, f_write, f_log, tout):
     d = post(dst, par, timeout=tout)
     d.addCallback(collect, partial(handle_reply, ts, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
-    d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s (timeout %d)" % (e, par['bsc_id'], dst, tout))) # handle HTTP errors
+    d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s (timeout %d)" % (repr(e), par['bsc_id'], dst, tout))) # handle HTTP errors
     return d
 
 class Trap(CTRL):

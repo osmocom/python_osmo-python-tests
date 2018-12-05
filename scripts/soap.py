@@ -90,7 +90,7 @@ class Trap(CTRL):
         ctx = self.factory.client.registerSiteLocation(bsc, float(params['lon']), float(params['lat']), params['position_validity'], params['time_stamp'], params['oper_status'], params['admin_status'], params['policy_status'])
         d = post(self.factory.location, ctx.envelope)
         d.addCallback(collect, partial(handle_reply, ctx.process_reply, params['bsc_id'], self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
-        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, bsc, self.factory.location)), bsc) # handle HTTP errors
+        d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (repr(e), bsc, self.factory.location)), bsc) # handle HTTP errors
         # Ensure that we run only limited number of requests in parallel:
         yield self.factory.semaphore.acquire()
         yield d # we end up here only if semaphore is available which means it's ok to fire the request without exceeding the limit
