@@ -4,7 +4,7 @@ Description=Proxy between given GCI service and Osmocom CTRL protocol
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/ctrl2cgi.py -o -d -c /etc/osmocom/ctrl2cgi.ini
+ExecStart=/usr/bin/ctrl2cgi.py -d -c /etc/osmocom/ctrl2cgi.ini
 RestartSec=2
 
 [Install]

@@ -148,13 +148,12 @@ if __name__ == '__main__':
     p.add_argument('-p', '--port-ctrl', type=int, default=4250, help="Port to use for CTRL interface, defaults to 4250")
     p.add_argument('-n', '--num-max-conn', type=int, default=5, help="Max number of concurrent HTTP requests to CGI server")
     p.add_argument('-d', '--debug', action='store_true', help="Enable debug log") # keep in sync with debug_init call below
-    p.add_argument('-o', '--output', action='store_true', help="Log to STDOUT in addition to SYSLOG")
     p.add_argument('-l', '--location', help="Location URL of the CGI server")
     p.add_argument('-s', '--secret-key', help="Secret key used to generate verification token")
     p.add_argument('-c', '--config-file', help="Path Config file. Cmd line args override values in config file")
     args = p.parse_args()
 
-    log = debug_init('CTRL2CGI', args.debug, args.output)
+    log = debug_init('CTRL2CGI', args.debug)
 
     location_cfgfile = None
     secret_key_cfgfile = None

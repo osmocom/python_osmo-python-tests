@@ -95,7 +95,7 @@ def reloader(path, script, log, dbg1, dbg2, signum, _):
             sys.argv.remove(dbg2)
     os.execl(path, script, *sys.argv[1:])
 
-def debug_init(name, is_debug, output):
+def debug_init(name, is_debug):
     """
     Initialize signal handlers and logging
     """
@@ -104,9 +104,7 @@ def debug_init(name, is_debug, output):
         log.setLevel(logging.DEBUG)
     else:
         log.setLevel(logging.INFO)
-    log.addHandler(logging.handlers.SysLogHandler('/dev/log'))
-    if output:
-        log.addHandler(logging.StreamHandler(sys.stdout))
+    log.addHandler(logging.StreamHandler(sys.stdout))
 
     reboot = partial(reloader, os.path.abspath(__file__), os.path.basename(__file__), log, '-d', '--debug') # keep in sync with caller's add_argument()
     signal.signal(signal.SIGHUP, reboot)

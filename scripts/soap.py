@@ -136,11 +136,10 @@ if __name__ == '__main__':
     p.add_argument('-w', '--wsdl', required=True, help="WSDL URL for SOAP")
     p.add_argument('-n', '--num', type=int, default=5, help="Max number of concurrent HTTP requests to SOAP server")
     p.add_argument('-d', '--debug', action='store_true', help="Enable debug log") # keep in sync with debug_init call below
-    p.add_argument('-o', '--output', action='store_true', help="Log to STDOUT in addition to SYSLOG")
     p.add_argument('-l', '--location', help="Override location found in WSDL file (don't use unless you know what you're doing)")
     args = p.parse_args()
 
-    log = debug_init('CTRL2SOAP', args.debug, args.output)
+    log = debug_init('CTRL2SOAP', args.debug)
 
     log.info("SOAP proxy %s starting with PID %d ..." % (__version__, os.getpid()))
     reactor.connectTCP(args.ctrl, args.port, TrapFactory(args.ctrl, args.port, Trap, defer.DeferredSemaphore(args.num), log, args.wsdl, args.location))
