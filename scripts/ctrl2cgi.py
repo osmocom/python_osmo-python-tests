@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.0.7" # bump this on every non-trivial change
+__version__ = "0.0.8" # bump this on every non-trivial change
 
 import argparse, os, logging, logging.handlers, datetime
 import hashlib
@@ -61,10 +61,10 @@ def gen_hash(params, skey):
     #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res
 
-def make_async_req(ts, dst, par, f_write, f_log):
-    d = post(dst, par)
+def make_async_req(ts, dst, par, f_write, f_log, tout):
+    d = post(dst, par, timeout=tout)
     d.addCallback(collect, partial(handle_reply, ts, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
-    d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, par['bsc_id'], dst))) # handle HTTP errors
+    d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s (timeout %d)" % (e, par['bsc_id'], dst, tout))) # handle HTTP errors
     return d
 
 class Trap(CTRL):
@@ -110,7 +110,7 @@ class Trap(CTRL):
         t = datetime.datetime.now()
         self.factory.log.debug('Preparing request for BSC %s @ %s...' % (params['bsc_id'], t))
         # Ensure that we run only limited number of requests in parallel:
-        self.factory.semaphore.run(make_async_req, t, self.factory.location, params, self.transport.write, self.factory.log)
+        self.factory.semaphore.run(make_async_req, t, self.factory.location, params, self.transport.write, self.factory.log, self.factory.timeout)
 
     def handle_notificationrejectionv1(self, net, bsc, bts, trx, data):
         """
@@ -148,6 +148,7 @@ if __name__ == '__main__':
 
     T.addr_ctrl = config['main'].get('addr_ctrl', 'localhost')
     T.port_ctrl = config['main'].getint('port_ctrl', 4250)
+    T.timeout = config['main'].getint('timeout', 30)
     T.semaphore = defer.DeferredSemaphore(config['main'].getint('num_max_conn', 5))
     T.location = config['main'].get('location')
     T.secret_key = config['main'].get('secret_key')
