@@ -40,12 +40,12 @@ from osmopy.osmo_ipa import Ctrl
 assert V(twisted_ipa_version) > V('0.4')
 
 
-def handle_reply(f, log, resp):
+def handle_reply(bid, f, log, resp):
     """
     Reply handler: process raw CGI server response, function f to run for each command
     """
     decoded = json.loads(resp.decode('utf-8'))
-    comm_proc(decoded.get('commands'), f, log)
+    comm_proc(decoded.get('commands'), bid, f, log)
 
 def gen_hash(params, skey):
     inp = ''
@@ -62,7 +62,7 @@ def gen_hash(params, skey):
 
 def make_async_req(dst, par, f_write, f_log):
     d = post(dst, par)
-    d.addCallback(collect, partial(handle_reply, f_write, f_log)) # treq's collect helper is handy to get all reply content at once
+    d.addCallback(collect, partial(handle_reply, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
     d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, par['bsc_id'], dst))) # handle HTTP errors
     return d
 

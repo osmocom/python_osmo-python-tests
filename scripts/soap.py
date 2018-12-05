@@ -38,12 +38,12 @@ from osmopy.osmo_ipa import Ctrl
 assert V(twisted_ipa_version) > V('0.4')
 
 
-def handle_reply(p, f, log, r):
+def handle_reply(p, bid, f, log, r):
     """
     Reply handler: takes function p to process raw SOAP server reply r, function f to run for each command
     """
     repl = p(r) # result is expected to have both commands[] array and error string (could be None)
-    bsc_id = comm_proc(repl.commands, f, log)
+    bsc_id = comm_proc(repl.commands, bid, f, log)
     log.info("Received SOAP response for BSC %s with %d commands, error status: %s" % (bsc_id, len(repl.commands), repl.error))
 
 
@@ -89,7 +89,7 @@ class Trap(CTRL):
         self.factory.log.debug('location-state@%s.%s.%s.%s (%s) => %s' % (net, bsc, bts, trx, params['time_stamp'], data))
         ctx = self.factory.client.registerSiteLocation(bsc, float(params['lon']), float(params['lat']), params['position_validity'], params['time_stamp'], params['oper_status'], params['admin_status'], params['policy_status'])
         d = post(self.factory.location, ctx.envelope)
-        d.addCallback(collect, partial(handle_reply, ctx.process_reply, self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
+        d.addCallback(collect, partial(handle_reply, ctx.process_reply, params['bsc_id'], self.transport.write, self.factory.log)) # treq's collect helper is handy to get all reply content at once using closure on ctx
         d.addErrback(lambda e, bsc: self.factory.log.critical("HTTP POST error %s while trying to register BSC %s on %s" % (e, bsc, self.factory.location)), bsc) # handle HTTP errors
         # Ensure that we run only limited number of requests in parallel:
         yield self.factory.semaphore.acquire()

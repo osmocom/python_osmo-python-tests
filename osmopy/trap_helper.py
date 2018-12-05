@@ -55,12 +55,12 @@ def get_type(v):
     loc = split_type(v)
     return loc[-1]
 
-def comm_proc(comm, f, log):
+def comm_proc(comm, bid, f, log):
     """
     Command processor: takes function f to run for each command
     """
     bsc_id = comm[0].split()[0].split('.')[3] # we expect 1st command to have net.0.bsc.666.bts.2.trx.1 location prefix format
-    log.debug("BSC %s commands: %r" % (bsc_id, comm))
+    log.debug("BSC %s commands: %r" % (bid, comm))
     for t in comm:
         (_, m) = Ctrl().cmd(*t.split())
         f(m)
