@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.0.8" # bump this on every non-trivial change
+__version__ = "0.0.9" # bump this on every non-trivial change
 
 import argparse, os, logging, logging.handlers, datetime
 import hashlib
@@ -39,13 +39,22 @@ from osmopy.osmo_ipa import Ctrl
 # we don't support older versions of TwistedIPA module
 assert V(twisted_ipa_version) > V('0.4')
 
+def log_duration(log, bid, ts, ts_http):
+    """
+    Log human-readable duration from timestamps
+    """
+    base = datetime.datetime.now()
+    delta_t = datetime.timedelta(seconds = (base - ts).total_seconds())
+    delta_h = datetime.timedelta(seconds = (base - ts_http).total_seconds())
+    delta_w = delta_t - delta_h
+    log.debug('Request for BSC %s took %s total (%s wait, %s http)' % (bid, delta_t, delta_w, delta_h))
 
-def handle_reply(ts, bid, f, log, resp):
+def handle_reply(ts, ts_http, bid, f, log, resp):
     """
     Reply handler: process raw CGI server response, function f to run for each command
     """
     decoded = json.loads(resp.decode('utf-8'))
-    log.debug('request for BSC %s took %d seconds' % (bid, (datetime.datetime.now() - ts).total_seconds()))
+    log_duration(log, bid, ts, ts_http)
     comm_proc(decoded.get('commands'), bid, f, log)
 
 def gen_hash(params, skey):
@@ -63,7 +72,7 @@ def gen_hash(params, skey):
 
 def make_async_req(ts, dst, par, f_write, f_log, tout):
     d = post(dst, par, timeout=tout)
-    d.addCallback(collect, partial(handle_reply, ts, par['bsc_id'], f_write, f_log)) # treq's collect helper is handy to get all reply content at once
+    d.addCallback(collect, partial(handle_reply, ts, datetime.datetime.now(), par['bsc_id'], f_write, f_log))
     d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s (timeout %d)" % (repr(e), par['bsc_id'], dst, tout))) # handle HTTP errors
     return d
 
