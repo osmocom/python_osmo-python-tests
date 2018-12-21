@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.0.9" # bump this on every non-trivial change
+__version__ = "0.1.0" # bump this on every non-trivial change
 
 import argparse, os, logging, logging.handlers, datetime
 import hashlib
@@ -89,11 +89,11 @@ class Trap(CTRL):
         """
         Parse CTRL TRAP and dispatch to appropriate handler after normalization
         """
-        self.factory.log.debug('TRAP %s' % v)
-        t_type = get_type(v)
-        p = p_h(v)
-        method = getattr(self, 'handle_' + t_type.replace('-', ''), lambda *_: "Unhandled %s trap" % t_type)
-        method(p(1), p(3), p(5), p(7), get_r(v))
+        if get_type(v) == 'location-state':
+            p = p_h(v)
+            self.handle_locationstate(p(1), p(3), p(5), p(7), get_r(v))
+        else:
+            self.factory.log.debug('Ignoring TRAP %s' % (v.split()[0]))
 
     def ctrl_SET_REPLY(self, data, _, v):
         """
@@ -125,12 +125,6 @@ class Trap(CTRL):
         self.factory.log.debug('Preparing request for BSC %s @ %s...' % (params['bsc_id'], t))
         # Ensure that we run only limited number of requests in parallel:
         self.factory.semaphore.run(make_async_req, t, self.factory.location, params, self.transport.write, self.factory.log, self.factory.timeout)
-
-    def handle_notificationrejectionv1(self, net, bsc, bts, trx, data):
-        """
-        Handle notification-rejection-v1 TRAP: just an example to show how more message types can be handled
-        """
-        self.factory.log.debug('notification-rejection-v1@bsc-id %s => %s' % (bsc, data))
 
 
 class TrapFactory(IPAFactory):
