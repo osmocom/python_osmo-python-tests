@@ -29,7 +29,7 @@ import hashlib
 import json
 import configparser
 from functools import partial
-from distutils.version import StrictVersion as V # FIXME: use NormalizedVersion from PEP-386 when available
+from distutils.version import StrictVersion as V
 from twisted.internet import defer, reactor
 from treq import post, collect
 from osmopy.trap_helper import debug_init, get_type, get_r, p_h, make_params, comm_proc
@@ -58,6 +58,9 @@ def handle_reply(ts, ts_http, bid, f, log, resp):
     comm_proc(decoded.get('commands'), bid, f, log)
 
 def gen_hash(params, skey):
+    """
+    Make mandatory parameter for http request
+    """
     inp = ''
     for key in ['time_stamp', 'position_validity', 'admin_status', 'policy_status']:
         inp += str(params.get(key))
@@ -67,10 +70,12 @@ def gen_hash(params, skey):
     m = hashlib.md5()
     m.update(inp.encode('utf-8'))
     res = m.hexdigest()
-    #print('HASH: \nparams="%r"\ninput="%s" \nres="%s"' %(params, input, res))
     return res
 
 def make_async_req(ts, dst, par, f_write, f_log, tout):
+    """
+    Assemble deferred request parameters and partially instantiate response handler
+    """
     d = post(dst, par, timeout=tout)
     d.addCallback(collect, partial(handle_reply, ts, datetime.datetime.now(), par['bsc_id'], f_write, f_log))
     d.addErrback(lambda e: f_log.critical("HTTP POST error %s while trying to register BSC %s on %s (timeout %d)" % (repr(e), par['bsc_id'], dst, tout))) # handle HTTP errors
