@@ -22,7 +22,7 @@
  */
 """
 
-import sys, os, datetime, signal, logging, logging.handlers
+import hashlib, sys, os, datetime, signal, logging, logging.handlers
 from functools import partial
 from osmopy.osmo_ipa import Ctrl
 
@@ -95,16 +95,39 @@ def reloader(path, script, log, dbg1, dbg2, signum, _):
             sys.argv.remove(dbg2)
     os.execl(path, script, *sys.argv[1:])
 
+def add_keys(inp, params, l):
+    """
+    Add given list of keys to input string.
+    """
+    for key in l:
+        inp += str(params.get(key))
+    return inp
+
+def gen_hash(params, skey):
+    """
+    Make mandatory parameter for HTTP request.
+    """
+    inp = add_keys('', params, ['time_stamp', 'position_validity', 'admin_status', 'policy_status'])
+    inp += skey
+    inp = add_keys(inp, params, ['bsc_id', 'lat', 'lon', 'position_validity'])
+    m = hashlib.md5()
+    m.update(inp.encode('utf-8'))
+    return m.hexdigest()
+
+def log_init(name, is_debug):
+    """
+    Initialize stdout logging.
+    """
+    log = logging.getLogger(name)
+    log.setLevel(logging.DEBUG if is_debug else logging.INFO)
+    log.addHandler(logging.StreamHandler(sys.stdout))
+    return log
+
 def debug_init(name, is_debug):
     """
     Initialize signal handlers and logging
     """
-    log = logging.getLogger(name)
-    if is_debug:
-        log.setLevel(logging.DEBUG)
-    else:
-        log.setLevel(logging.INFO)
-    log.addHandler(logging.StreamHandler(sys.stdout))
+    log = log_init(name, is_debug)
 
     reboot = partial(reloader, os.path.abspath(__file__), os.path.basename(__file__), log, '-d', '--debug') # keep in sync with caller's add_argument()
     signal.signal(signal.SIGHUP, reboot)

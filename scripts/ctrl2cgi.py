@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.1.0" # bump this on every non-trivial change
+__version__ = "0.1.1" # bump this on every non-trivial change
 
 import argparse, os, logging, logging.handlers, datetime
 import hashlib
@@ -32,7 +32,7 @@ from functools import partial
 from distutils.version import StrictVersion as V
 from twisted.internet import defer, reactor
 from treq import post, collect
-from osmopy.trap_helper import debug_init, get_type, get_r, p_h, make_params, comm_proc
+from osmopy.trap_helper import debug_init, get_type, get_r, p_h, gen_hash, make_params, comm_proc
 from osmopy.twisted_ipa import CTRL, IPAFactory, __version__ as twisted_ipa_version
 from osmopy.osmo_ipa import Ctrl
 
@@ -56,21 +56,6 @@ def handle_reply(ts, ts_http, bid, f, log, resp):
     decoded = json.loads(resp.decode('utf-8'))
     log_duration(log, bid, ts, ts_http)
     comm_proc(decoded.get('commands'), bid, f, log)
-
-def gen_hash(params, skey):
-    """
-    Make mandatory parameter for http request
-    """
-    inp = ''
-    for key in ['time_stamp', 'position_validity', 'admin_status', 'policy_status']:
-        inp += str(params.get(key))
-    inp += skey
-    for key in ['bsc_id', 'lat', 'lon', 'position_validity']:
-        inp += str(params.get(key))
-    m = hashlib.md5()
-    m.update(inp.encode('utf-8'))
-    res = m.hexdigest()
-    return res
 
 def make_async_req(ts, dst, par, f_write, f_log, tout):
     """
