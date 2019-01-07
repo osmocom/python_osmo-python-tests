@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxy between given GCI service and Osmocom CTRL protocol
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/osmo_trap2cgi.py -d -c %E/osmocom/%N.ini
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

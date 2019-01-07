@@ -9,7 +9,8 @@ Use
 There are currently following scripts in this package:
 osmotestconfig.py - test that apps start/write with example configs
 soap.py - implementation of SOAP <-> Ctrl proxy implemented on top of Twisted (deprecated, unmaintained)
-ctrl2cgi.py - implementation of CGI <-> Ctrl proxy implemented on top of Twisted
+ctrl2cgi.py - implementation of CGI <-> Ctrl proxy implemented on top of Twisted (deprecated, unmaintained)
+osmo_trap2cgi.py - implementation of CGI <-> Ctrl proxy implemented on top of asyncio and aiohttp
 osmo_rate_ctr2csv.py - rate counter dumper on top of osmo_ipa
 osmo_interact_vty.py - pipe stdin/stdout to a VTY session
 osmo_interact_ctrl.py - pipe stdin/stdout to a CTRL port

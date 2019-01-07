@@ -17,3 +17,4 @@ override_dh_installinit:
 	# Install service file with different name than package name:
 	# https://unix.stackexchange.com/questions/306234/is-it-possible-to-install-two-services-for-one-package-using-dh-installinit-how
 	dh_installinit --name=osmo-ctrl2cgi
+	dh_installinit --name=osmo-trap2cgi
