@@ -374,7 +374,7 @@ def verify_application(run_app_str, interact, transcript_file, verbose):
 
     return passed
 
-def common_parser(doc=None):
+def common_parser(doc=None, host=True):
     parser = argparse.ArgumentParser(description=doc,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-r', '--run', dest='run_app_str',
@@ -383,8 +383,9 @@ def common_parser(doc=None):
                         ' application is launched.')
     parser.add_argument('-p', '--port', dest='port',
                         help="Port to reach the application at.")
-    parser.add_argument('-H', '--host', dest='host', default='localhost',
-                        help="Host to reach the application at.")
+    if host:
+        parser.add_argument('-H', '--host', dest='host', default='localhost',
+                            help="Host to reach the application at.")
     return parser
 
 def parser_add_verify_args(parser):
@@ -397,17 +398,30 @@ def parser_add_verify_args(parser):
     parser.add_argument('transcript_files', nargs='*', help='transcript file(s) to verify')
     return parser
 
-def parser_add_run_args(parser):
+def parser_add_run_args(parser, cmd_files=True):
     parser.add_argument('-O', '--output', dest='output_path',
                         help="Write command results to a file instead of stdout."
                         "('-O -' writes to stdout and is the default)")
     parser.add_argument('-c', '--command', dest='cmd_str',
                         help="Run this command (before reading input files, if any)."
                         " multiple commands may be separated by ';'")
-    parser.add_argument('cmd_files', nargs='*', help='file(s) with plain commands to run')
+    if cmd_files:
+        parser.add_argument('cmd_files', nargs='*', help='file(s) with plain commands to run')
     return parser
 
-def main_run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
+def parser_require_args(parser, dests):
+    for dest in dests:
+        found = False
+        for action in parser._actions:
+            if action.dest == dest:
+                action.required = True
+                found = True
+                break
+        if not found:
+            raise RuntimeError("Could not find argument with dest: " + dest)
+
+def main_run_commands(run_app_str, output_path, cmd_str, cmd_files, interact,
+                      purge_output=True):
     to_stdout = False
     if not output_path or output_path == '-':
         to_stdout = True
@@ -418,7 +432,7 @@ def main_run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
     application = None
 
     if run_app_str:
-        application = Application(run_app_str, quiet=to_stdout)
+        application = Application(run_app_str, quiet=to_stdout, purge_output=purge_output)
         application.run()
 
     try:
