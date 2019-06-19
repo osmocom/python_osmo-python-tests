@@ -22,7 +22,7 @@
  */
 """
 
-__version__ = "0.0.1" # bump this on every non-trivial change
+__version__ = "0.0.2" # bump this on every non-trivial change
 
 from functools import partial
 import configparser, argparse, time, os, asyncio, aiohttp
@@ -190,29 +190,32 @@ async def recon_reader(proxy, reader, num_bytes):
         return await reader.readexactly(num_bytes)
     except asyncio.IncompleteReadError:
         proxy.log.info('Failed to read %d bytes reconnecting to %s:%d...', num_bytes, proxy.ctrl_addr, proxy.ctrl_port)
-        await conn_client(proxy)
+        raise
 
 async def ctrl_client(proxy, rd, wr):
     """
-    Recursively read CTRL stream and handle selected messages.
+    Read CTRL stream and handle selected messages.
     """
-    header = await recon_reader(proxy, rd, 4)
-    data = await recon_reader(proxy, rd, get_ctrl_len(proxy, header))
-    proxy.dispatch(wr, data)
-    await ctrl_client(proxy, rd, wr)
+    while True:
+        header = await recon_reader(proxy, rd, 4)
+        data = await recon_reader(proxy, rd, get_ctrl_len(proxy, header))
+        proxy.dispatch(wr, data)
 
 async def conn_client(proxy):
     """
     (Re)establish connection with CTRL server and pass Reader/Writer to CTRL handler.
     """
-    try:
-        reader, writer = await asyncio.open_connection(proxy.ctrl_addr, proxy.ctrl_port)
-        proxy.log.info('Connected to %s:%d', proxy.ctrl_addr, proxy.ctrl_port)
-        await ctrl_client(proxy, reader, writer)
-    except OSError as e:
-        proxy.log.info('%s: %d seconds delayed retrying...', e, proxy.timeout)
-        await asyncio.sleep(proxy.timeout)
-        await conn_client(proxy)
+    while True:
+        try:
+            reader, writer = await asyncio.open_connection(proxy.ctrl_addr, proxy.ctrl_port)
+            proxy.log.info('Connected to %s:%d', proxy.ctrl_addr, proxy.ctrl_port)
+            await ctrl_client(proxy, reader, writer)
+        except OSError as e:
+            proxy.log.info('%s: %d seconds delayed retrying...', e, proxy.timeout)
+            await asyncio.sleep(proxy.timeout)
+        except asyncio.IncompleteReadError:
+            pass
+        proxy.log.info('Reconnecting...')
 
 
 if __name__ == '__main__':
