@@ -4,7 +4,7 @@ Description=Proxy between given GCI service and Osmocom CTRL protocol
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/osmo_trap2cgi.py -d -c %E/osmocom/%N.ini
+ExecStart=/usr/bin/osmo_trap2cgi.py -d -c /etc/osmocom/%N.ini
 RestartSec=2
 
 [Install]
