@@ -116,9 +116,16 @@ class InteractVty(Interact):
                 # So we need to jump through hoops to not separate 'abc\n\rdef' as
                 # [ 'abc', '', 'def' ]; but also not to convert '\r\n\r\n' to '\r\n\n' ('\r{\r\n}\n')
                 # Simplest is to just drop all the '\r' and only care about the '\n'.
-                lines = last_line.replace('\r', '').splitlines()
-                received_lines.extend(lines[:-1])
-                last_line = lines[-1]
+                last_line = last_line.replace('\r', '')
+                lines = last_line.splitlines()
+                if last_line.endswith('\n'):
+                    received_lines.extend(lines)
+                    last_line = ""
+                else:
+                    # if pkt buffer ends in the middle of a line, we need to keep
+                    # last non-finished line:
+                    received_lines.extend(lines[:-1])
+                    last_line = lines[-1]
 
             match = self.re_prompt.match(last_line)
             if not match:
