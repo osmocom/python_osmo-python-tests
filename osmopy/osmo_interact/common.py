@@ -429,7 +429,7 @@ def main_run_commands(run_app_str, output_path, cmd_str, cmd_files, interact):
 
         for f_path in (cmd_files or []):
             with open(f_path, 'r') as f:
-                interact.feed_commands(output, f.read().decode('utf-8').splitlines())
+                interact.feed_commands(output, f.read().splitlines())
 
         if not (cmd_str or cmd_files):
             while True:
