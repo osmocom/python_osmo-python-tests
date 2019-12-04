@@ -1,2 +1,2 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 __all__ = ['common', 'vty', 'ctrl']
