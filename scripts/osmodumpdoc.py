@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Make sure this code is in sync with the BTS directory.
 # Fixes may need to be applied to both.
 
 """Start the process and dump the documentation to the doc dir."""
-from __future__ import print_function
 import subprocess
 import time
 import os

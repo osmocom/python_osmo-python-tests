@@ -24,11 +24,6 @@ This implements all of application interaction, piping and verification.
 vty.py and ctrl.py plug VTY and CTRL interface specific bits.
 '''
 
-# Our setup.py currently wants everything to be parsable by both py2 and py3.
-# IMHO that is not a good idea, but until that changes, let's just keep this
-# py2 legacy shim in here so we can syntax-check this py3 module with py2.
-from __future__ import print_function
-
 import argparse
 import sys
 import os

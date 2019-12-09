@@ -16,7 +16,6 @@
 #
 # VTY helper code for OpenBSC
 #
-from __future__ import print_function
 import re
 import socket
 import sys, subprocess
@@ -176,13 +175,13 @@ class VTYInteract(object):
         self._connect_socket()
 
         # Now send the command
-        self.socket.send("%s\r" % request)
+        self.socket.send(("%s\r" % request).encode())
         res = ""
         end = ""
 
         # Unfortunately, timeout and recv don't always play nicely
         while True:
-            data = self.socket.recv(4096)
+            data = self.socket.recv(4096).decode()
             res = "%s%s" % (res, data)
             if not res:  # yes, this is ugly
                 raise IOError("Failed to read data (did the app crash?)")
@@ -205,7 +204,7 @@ class VTYInteract(object):
         buffer = ''
         data = True
         while data:
-            data = self.socket.recv(recv_buffer)
+            data = self.socket.recv(recv_buffer).decode()
             buffer += data
 
             while buffer.find(delim) != -1:
@@ -244,8 +243,8 @@ class VTYInteract(object):
     def verify(self, command, results, close=False, loud=True, f=None):
         res = self.command(command, close).split('\r\n')
         if f:
-            res = map(f, res)
-            results = map(f, results)
+            res = list(map(f, res))
+            results = list(map(f, results))
 
         if loud:
             if res != results:
