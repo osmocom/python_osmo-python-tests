@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # (C) 2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
 # This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,6 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import print_function
 import os
 import os.path
 import time
@@ -89,7 +88,7 @@ def copy_config(dirname, config):
     prefix = os.path.basename(config)
     tmpfile = tempfile.NamedTemporaryFile(
         dir=dirname, prefix=prefix, delete=False)
-    tmpfile.write(open(config).read())
+    tmpfile.write(open(config).read().encode())
     tmpfile.close()
     # This works around the precautions NamedTemporaryFile is made for...
     return tmpfile.name

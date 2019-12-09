@@ -2,25 +2,11 @@ Source: osmo-python-tests
 Section: python
 Priority: optional
 Maintainer: Harald Welte <laforge@gnumonks.org>
-Build-Depends: debhelper (>= 9), python, dh-python, python-setuptools, python3, python3-setuptools
+Build-Depends: debhelper (>= 9), dh-python, python3, python3-setuptools
 Standards-Version: 3.9.8
 Homepage: http://git.osmocom.org/python/osmo-python-tests/
 Vcs-Git: git://git.osmocom.org/python/osmo-python-tests
 Vcs-Browser: http://git.osmocom.org/python/osmo-python-tests/
-
-Package: python2-osmopy-libs
-Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}
-Description: Python code (not only) for testing of Osmocom programs
- .
- This package contains the Python 2 version of osmopy libraries.
-
-Package: python2-osmopy-utils
-Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python2-osmopy-libs
-Description: Python code (not only) for testing of Osmocom programs
- .
- This package contains the Python 2 version of osmopy utils.
 
 Package: python3-osmopy-libs
 Architecture: all
