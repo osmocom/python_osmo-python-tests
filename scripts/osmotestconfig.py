@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import os.path
+import shutil
 import time
 import sys, shutil, stat
 import tempfile
@@ -137,10 +138,7 @@ def app_exists(app_desc):
 
 
 def remove_tmpdir(tmpdir):
-    files = os.listdir(tmpdir)
-    for f in files:
-        os.unlink(os.path.join(tmpdir, f))
-    os.rmdir(tmpdir)
+    shutil.rmtree(tmpdir)
 
 
 def check_configs_tested(basedir, app_configs, ignore_configs):
