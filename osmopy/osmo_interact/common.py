@@ -44,6 +44,7 @@ class Interact:
 
         def __init__(self):
             self.result = []
+            self.leading_blanks = []
 
         def verify_interact_state(self, interact_instance):
             # for example to verify that the last VTY prompt received shows the
@@ -131,24 +132,26 @@ class Interact:
         steps = []
         step = None
         blank_lines = 0
+        leading_blanks = []
         for line in transcript.splitlines():
-            if not line:
-                blank_lines += 1
+            if not line or line.strip().startswith('#'):
+                leading_blanks.append(line);
                 continue
+
             next_step_started = self.Step.is_next_step(line, self)
             if next_step_started:
                 if step:
                     steps.append(step)
                 step = next_step_started
-                step.leading_blanks = blank_lines
-                blank_lines = 0
+                step.leading_blanks = leading_blanks
+                leading_blanks = []
             elif step:
                 # we only count blank lines directly preceding the start of a
                 # next step. Insert blank lines in the middle of a response
                 # back into the response:
-                if blank_lines:
-                    step.result.extend([''] * blank_lines)
-                blank_lines = 0
+                if leading_blanks:
+                    step.result.extend(leading_blanks)
+                leading_blanks = []
                 step.result.append(line)
         if step:
             steps.append(step)
@@ -163,7 +166,7 @@ class Interact:
             try:
                 if self.verbose:
                     if step.leading_blanks:
-                        print('\n' * step.leading_blanks, end='')
+                        print('\n'.join(step.leading_blanks), end='')
                     print(step.command_str())
                     sys.stdout.flush()
 
@@ -182,7 +185,7 @@ class Interact:
                     sys.stdout.flush()
 
                 if step.leading_blanks:
-                    actual_result.extend([''] * step.leading_blanks)
+                    actual_result.extend(step.leading_blanks)
                 actual_result.append(step.command_str(self))
 
                 match_result = self.match_lines(step.result, res)
