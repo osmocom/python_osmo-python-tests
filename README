@@ -1,6 +1,5 @@
 Building/installation:
 
-	sudo python setup.py install
 	sudo python3 setup.py install
 
 If you prefer to have it cleanly removable, install checkinstall and run
@@ -9,7 +8,6 @@ If you prefer to have it cleanly removable, install checkinstall and run
 
 Alternatively, just run
 
-	pip install --user -e ./
 	pip3 install --user -e ./
 
 depending on your python version.
