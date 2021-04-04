@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Osmopython: test utilities for osmocom programs
 # Copyright (C) 2013 Katerina Barone-Adesi kat.obsc@gmail.com
 
