@@ -41,7 +41,7 @@ class IPA(object):
     CTRL_GET = 'GET'
     CTRL_SET = 'SET'
     CTRL_REP = 'REPLY'
-    CTRL_ERR = 'ERR'
+    CTRL_ERR = 'ERROR'
     CTRL_TRAP = 'TRAP'
     CTRL_TRAP_ID = 0
 
