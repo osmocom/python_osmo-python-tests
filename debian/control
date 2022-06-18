@@ -4,9 +4,9 @@ Priority: optional
 Maintainer: Harald Welte <laforge@gnumonks.org>
 Build-Depends: debhelper (>= 9), dh-python, python3, python3-setuptools
 Standards-Version: 3.9.8
-Homepage: http://git.osmocom.org/python/osmo-python-tests/
-Vcs-Git: git://git.osmocom.org/python/osmo-python-tests
-Vcs-Browser: http://git.osmocom.org/python/osmo-python-tests/
+Homepage: https://gitea.osmocom.org/cellular-infrastructure/osmo-python-tests
+Vcs-Git: https://gitea.osmocom.org/cellular-infrastructure/osmo-python-tests
+Vcs-Browser: https://gitea.osmocom.org/cellular-infrastructure/osmo-python-tests
 
 Package: python3-osmopy-libs
 Architecture: all
