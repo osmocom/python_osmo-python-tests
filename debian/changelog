@@ -1,3 +1,123 @@
+osmo-python-tests (0.2.1) unstable; urgency=medium
+
+  [ Harald Welte ]
+  * remove_tmpdir(): Support recursion / sub-directories
+
+  [ Pau Espin Pedrol ]
+  * README: Drop python2 references
+
+  [ Vadim Yanitskiy ]
+  * Use proper python3 shebang in all modules
+
+  [ Pau Espin Pedrol ]
+  * osmo_ipa: Fix parsing ERROR msgs in CTRL iface
+
+  [ Oliver Smith ]
+  * treewide: remove FSF address
+
+  [ Harald Welte ]
+  * update git URLs (git -> https; gitea)
+
+  [ Oliver Smith ]
+  * Bump version: 0.2.1
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 06 Jul 2022 11:17:13 +0200
+
+osmo-python-tests (0.2.0) unstable; urgency=medium
+
+  [ Max ]
+  * Re-apply changes to trap_helper.py
+  * Update trap helper
+  * Move Trap class back to separate files
+  * ctrl: cosmetic cleanup
+  * ctrl: add function to skip TRAP messages
+  * osmo_ctrl.py: properly ignore out-of-order traps
+  * ctrl2cgi: fix deferred callbacks
+  * Drop unused Trap() class
+  * Move command processing into shared function
+  * Improve code style
+  * Trap handlers: always log to stdout
+  * ctrl2cgi: fix broken config override
+  * ctrl2cgi: properly limit number of requests
+  * ctrl2cgi: add config file example
+  * Trap handlers: propagate expected BSC id to command processor
+  * Trap handlers: log request/reply as info level
+  * ctrl2cgi: log request time
+  * ctrl2cgi: make http request timeout configurable
+  * Trap handlers: adjust http error log
+  * twisted: remove low-level logging in dispatchers
+
+  [ Oliver Smith ]
+  * scripts/*.py: mark as executable
+
+  [ Max ]
+  * ctrl2cgi: account wait and http times separately
+  * ctrl2cgi: update comments
+  * ctrl2cgi: explicitly ignore unrelated TRAPs
+  * ctrl2cgi: update default parameters in config
+  * Mark soap.py as deprecated
+  * ctrl2cgi: update shared helper
+  * Add initial version of asyncio trap2cgi script
+
+  [ Daniel Willmann ]
+  * osmo-trap2cgi: Fix script installation and dependencies
+
+  [ Max ]
+  * deb: fix wrong changelog date
+
+  [ Daniel Willmann ]
+  * osmo-trap2cgi: Remove invalid specifier for /etc
+  * osmo_trap2cgi.py: Don't recurse in ctrl_client()
+
+  [ Neels Hofmeyr ]
+  * tweak README
+
+  [ Pau Espin Pedrol ]
+  * vty.py: Fix endl removed when pkt buffer content ends exactly on a newline char
+
+  [ Neels Hofmeyr ]
+  * osmo_interact_vty.py: fix py3 encoding bug
+
+  [ Oliver Smith ]
+  * Drop python2 support
+  * Revert "Drop python2 support"
+  * Drop python2 support (again)
+
+  [ Harald Welte ]
+  * update version to 0.2.0 to mark python2 deprecation
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 06 Jul 2022 11:13:28 +0200
+
+osmo-python-tests (0.1.0) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * Move twisted_ipa.py to osmopy lib
+  * Introduce script ctrl2cgi.py
+  * debian: Add python module deps for python3-osmopy-utils
+  * ctrl2cgi: Add systemd service file and install with debian
+
+  [ Neels Hofmeyr ]
+  * osmo_interact/vty.py: fix parsing of vty logging
+  * osmo_interact/common: ignore trailing empty lines in received results
+
+  [ Pau Espin Pedrol ]
+  * osmo-ctrl2cgi.service: Fix exec path not absolute
+
+  [ Harald Welte ]
+  * make osmpy IPA code aware of RSPRO
+
+  [ Max ]
+  * ctrl2cgi.py: log address on errors
+  * ctrl2cgi: log traps via debug facility
+  * ctrl2cgi: explicitly ignore arguments to lambda function
+  * ctrl2cgi: remove unused function
+  * ctrl: introduce constant for TRAP id
+  * osmo_ipa: add extended checks
+  * osmo_ipa: update split_combined docs
+  * Move common Trap-related code into separate file
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 06 Jul 2022 11:10:08 +0200
+
 osmo-python-tests (0.0.9) unstable; urgency=medium
 
   * Initial package
