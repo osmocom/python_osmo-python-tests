@@ -95,7 +95,7 @@ class InteractVty(Interact):
         if not self.prompt:
             raise Exception('Could not find application name; needed to decode prompts.'
                             ' Initial data was: %r' % data)
-        self.re_prompt = re.compile('^%s(?:\(([\w-]*)\))?([#>]) (.*)$' % self.prompt)
+        self.re_prompt = re.compile('^%s(?:\(([\w-]*)\))?([#>]) (.*)$' % re.escape(self.prompt))
 
     def _command(self, command_str, timeout=10):
         self.socket.send(command_str.encode())
