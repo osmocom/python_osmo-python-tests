@@ -68,7 +68,8 @@ def end_proc(proc):
         print("Killed child process")
     elif waited_time > .002:
         print("Terminating took %.3fs" % waited_time)
-    proc.wait()
+    rc = proc.wait()
+    print("Process returned code: %d" % rc)
 
 
 """Add a directory to sys.path, try to import a config file."""
