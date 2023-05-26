@@ -1,5 +1,7 @@
 [Unit]
 Description=Proxy between given GCI service and Osmocom CTRL protocol
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
