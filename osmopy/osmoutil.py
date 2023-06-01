@@ -42,9 +42,9 @@ def popen_devnull(cmd, verbose=True):
 If the process doesn't appear to exist (for instance, is None), do nothing"""
 
 
-def end_proc(proc):
+def end_proc(proc):  # -> Optional[int]
     if not proc:
-        return
+        return None
 
     proc.terminate()
     time_to_wait_for_term = 5
@@ -70,6 +70,7 @@ def end_proc(proc):
         print("Terminating took %.3fs" % waited_time)
     rc = proc.wait()
     print("Process returned code: %d" % rc)
+    return rc
 
 
 """Add a directory to sys.path, try to import a config file."""
