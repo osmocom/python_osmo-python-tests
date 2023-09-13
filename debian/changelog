@@ -1,3 +1,17 @@
+osmo-python-tests (0.3.0) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * InteractVty: re.escape() the VTY prompt in connect()
+  * osmoutil: print return code in end_proc()
+  * setup.py: do not install scripts/{soap,ctrl2cgi}.py
+  * osmoutil: return proc's return code from end_proc()
+
+  [ Oliver Smith ]
+  * debian: set compat level to 10
+  * systemd: depend on networking-online.target
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Wed, 13 Sep 2023 14:48:02 +0200
+
 osmo-python-tests (0.2.1) unstable; urgency=medium
 
   [ Harald Welte ]
