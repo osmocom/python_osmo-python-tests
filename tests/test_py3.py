@@ -46,7 +46,7 @@ if __name__ == '__main__':
     print('Serving on {}...'.format(server.sockets[0].getsockname()))
 
     # Async client running in the subprocess plugged to the same event loop
-    loop.run_until_complete(asyncio.gather(asyncio.create_subprocess_exec('./scripts/osmo_ctrl.py', '-g', 'mnc', '-d', test_host, '-p', test_port), loop = loop))
+    loop.run_until_complete(asyncio.gather(asyncio.create_subprocess_exec('./scripts/osmo_ctrl.py', '-g', 'mnc', '-d', test_host, '-p', test_port)))
 
     loop.run_forever()
 
