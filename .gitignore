@@ -2,3 +2,4 @@ osmopython.egg-info/
 *.pyc
 build/
 dist/
+.local/
