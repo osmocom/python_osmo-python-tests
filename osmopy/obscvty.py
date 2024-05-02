@@ -65,8 +65,8 @@ class VTYInteract(object):
         self.port = port
 
         self.socket = None
-        self.norm_end = re.compile('\r\n%s(?:\(([\w-]*)\))?> $' % self.name)
-        self.priv_end = re.compile('\r\n%s(?:\(([\w-]*)\))?# $' % self.name)
+        self.norm_end = re.compile(r'\r\n%s(?:\(([\w-]*)\))?> $' % self.name)
+        self.priv_end = re.compile(r'\r\n%s(?:\(([\w-]*)\))?# $' % self.name)
         self.last_node = ''
 
     def _connect_socket(self):

@@ -32,7 +32,7 @@ from osmopy.osmo_ipa import Ctrl, IPA
 class InteractCtrl(Interact):
     next_id = 1
     keep_ids = True
-    re_command = re.compile('^(SET|GET) ([^ ]*) (.*)$')
+    re_command = re.compile(r'^(SET|GET) ([^ ]*) (.*)$')
 
     class CtrlStep(Interact.StepBase):
 
