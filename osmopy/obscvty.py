@@ -191,7 +191,7 @@ class VTYInteract(object):
 
         if close:
             self._close_socket()
-        return res[len(request) + 2: -end]
+        return res[len(request) + 2: end * -1]
 
     """A generator function yielding lines separated by delim.
        Behaves similar to a file readlines() method.
