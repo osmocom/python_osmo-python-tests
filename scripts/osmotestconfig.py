@@ -124,10 +124,6 @@ def app_exists(app_desc):
     return os.path.exists(cmd)
 
 
-def remove_tmpdir(tmpdir):
-    shutil.rmtree(tmpdir)
-
-
 def check_configs_tested(basedir, app_configs, ignore_configs):
     configs = []
     for root, dirs, files in os.walk(basedir):
@@ -156,7 +152,7 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
             config = os.path.join(confpath, config)
             test_config(app, config, tmpdir, verbose)
 
-    remove_tmpdir(tmpdir)
+    shutil.rmtree(tmpdir)
 
 
 if __name__ == '__main__':
