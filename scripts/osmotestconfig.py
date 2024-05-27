@@ -68,7 +68,8 @@ def test_config_atest(app_desc, config, run_test, verbose=True):
     return ret
 
 def copy_config(dirname, config):
-    shutil.rmtree(dirname, True)
+    if os.path.exists(dirname):
+        shutil.rmtree(dirname)
     ign = shutil.ignore_patterns('*.cfg')
     shutil.copytree(os.path.dirname(config), dirname, ignore=ign)
     os.chmod(dirname, stat.S_IRWXU)
