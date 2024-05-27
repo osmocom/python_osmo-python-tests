@@ -71,10 +71,7 @@ def copy_config(dirname, config):
     if os.path.exists(dirname):
         shutil.rmtree(dirname)
 
-    try:
-        os.stat(dirname)
-    except OSError:
-        os.mkdir(dirname)
+    os.mkdir(dirname)
 
     prefix = os.path.basename(config)
     tmpfile = tempfile.NamedTemporaryFile(
