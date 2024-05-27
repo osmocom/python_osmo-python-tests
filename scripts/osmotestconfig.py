@@ -24,25 +24,17 @@ import osmopy.obscvty as obscvty
 import osmopy.osmoutil as osmoutil
 
 
-# Return true iff all the tests for the given config pass
+# Run all tests for a given config, raise error on failure
 def test_config(app_desc, config, tmpdir, verbose=True):
-    try:
-        err = 0
-        if test_config_atest(app_desc, config, verify_doc, verbose)[0] > 0:
-            err += 1
+    if test_config_atest(app_desc, config, verify_doc, verbose)[0] > 0:
+        raise RuntimeError(f"{config}: verify_doc() failed")
 
-        newconfig = copy_config(tmpdir, config)
-        if test_config_atest(app_desc, newconfig, write_config, verbose) > 0:
-            err += 1
+    newconfig = copy_config(tmpdir, config)
+    if test_config_atest(app_desc, newconfig, write_config, verbose) > 0:
+        raise RuntimeError(f"{config}: write_config() failed")
 
-        if test_config_atest(app_desc, newconfig, token_vty_command, verbose) > 0:
-            err += 1
-
-        return err
-
-    # If there's a socket error, skip the rest of the tests for this config
-    except IOError:
-        return 1
+    if test_config_atest(app_desc, newconfig, token_vty_command, verbose) > 0:
+        raise RuntimeError(f"{config}: token_vty_command() failed")
 
 
 def test_config_atest(app_desc, config, run_test, verbose=True):
@@ -159,7 +151,6 @@ def check_configs_tested(basedir, app_configs, ignore_configs):
 def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
                   confpath=".", ignore_configs=[]):
     check_configs_tested("doc/examples/", app_configs, ignore_configs)
-    errors = 0
     for app in apps:
         if not app_exists(app):
             print("Skipping app %s (not found)" % app[1], file=sys.stderr)
@@ -168,14 +159,9 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
         configs = app_configs[app[3]]
         for config in configs:
             config = os.path.join(confpath, config)
-            errors += test_config(app, config, tmpdir, verbose)
+            test_config(app, config, tmpdir, verbose)
 
-    if not errors:
-        remove_tmpdir(tmpdir)
-
-    if errors:
-        print("ERRORS: %d" % errors, file=sys.stderr)
-    return errors
+    remove_tmpdir(tmpdir)
 
 
 if __name__ == '__main__':
