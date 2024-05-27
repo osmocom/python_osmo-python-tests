@@ -157,7 +157,7 @@ def check_configs_tested(basedir, app_configs, ignore_configs):
 
 
 def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
-                  confpath=".", rmtmp=False, ignore_configs=[]):
+                  confpath=".", ignore_configs=[]):
     check_configs_tested("doc/examples/", app_configs, ignore_configs)
     errors = 0
     for app in apps:
@@ -170,7 +170,7 @@ def test_all_apps(apps, app_configs, tmpdir="writtenconfig", verbose=True,
             config = os.path.join(confpath, config)
             errors += test_config(app, config, tmpdir, verbose)
 
-    if rmtmp or not errors:
+    if not errors:
         remove_tmpdir(tmpdir)
 
     if errors:
