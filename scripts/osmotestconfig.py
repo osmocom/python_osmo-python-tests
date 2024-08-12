@@ -86,7 +86,7 @@ def write_config(vty):
     new_config = vty.enabled_command("write")
     if not new_config.startswith("Configuration saved to "):
         print(new_config)
-        return 1, [new_config]
+        return 1
     return 0
 
 
